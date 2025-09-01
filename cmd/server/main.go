@@ -18,24 +18,34 @@ type Transaction struct {
 	Notes       string    `json:"notes"`
 }
 
-func main() {
-	fmt.Println("Welcome to ledger!")
+type Ledger struct {
+	transactions []Transaction
+}
 
-	// Setup Gin
-	router := gin.Default()
-	router.GET("/", func(ctx *gin.Context) {
-		html := `<h1>Hello There!</h1>`
-		ctx.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
-	})
-	router.GET("/transactions", getTransactions)
-
-	if err := router.Run("localhost:8080"); err != nil {
-		log.Fatalf("Gin server failed to start: %v", err)
+func NewLedger() *Ledger {
+	return &Ledger{
+		transactions: make([]Transaction, 0),
 	}
 }
 
-func getTransactions(ctx *gin.Context) {
-	transactions := []Transaction{
+func (l *Ledger) AddTransaction(t Transaction) {
+	l.transactions = append(l.transactions, t)
+}
+
+func (l *Ledger) AddTransactions(tSlice []Transaction) {
+	l.transactions = append(l.transactions, tSlice...)
+}
+
+func (l *Ledger) GetTransactions() []Transaction {
+	return l.transactions
+}
+
+func main() {
+	fmt.Println("Welcome to ledger!")
+
+	// Setup data in memory
+	ledger := NewLedger()
+	ledger.AddTransactions([]Transaction{
 		{
 			ID:          0,
 			Date:        time.Date(2025, time.October, 16, 0, 0, 0, 0, time.UTC),
@@ -58,6 +68,37 @@ func getTransactions(ctx *gin.Context) {
 			Category:    "Fun",
 			Notes:       "Bratz n beerz with the boyz",
 		},
+	})
+
+	// Setup Gin
+	router := gin.Default()
+	router.GET("/", func(ctx *gin.Context) {
+		html := `<h1>Hello There!</h1>`
+		ctx.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
+	})
+	router.GET("/transactions", getTransactionsHandler(ledger))
+	router.POST("/transactions", postTransactionsHandler(ledger))
+
+	if err := router.Run("localhost:8080"); err != nil {
+		log.Fatalf("Gin server failed to start: %v", err)
 	}
-	ctx.IndentedJSON(http.StatusOK, transactions)
+}
+
+func getTransactionsHandler(l *Ledger) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		ctx.IndentedJSON(http.StatusOK, l.GetTransactions())
+	}
+}
+
+func postTransactionsHandler(l *Ledger) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		var t Transaction
+
+		if err := ctx.BindJSON(&t); err != nil {
+			return
+		}
+
+		l.AddTransaction(t)
+		ctx.IndentedJSON(http.StatusCreated, t)
+	}
 }
