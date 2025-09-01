@@ -50,9 +50,9 @@ func main() {
 	})
 
 	// Setup API endpoints
-	router.GET("/transactions", handlers.GetTransactionsHandler(ledger))
-	router.GET("/transactions/:id", handlers.GetTransactionByIdHandler(ledger))
-	router.POST("/transactions", handlers.PostTransactionsHandler(ledger))
+	router.GET("/api/transactions", handlers.GetTransactionsHandler(ledger))
+	router.GET("/api/transactions/:id", handlers.GetTransactionByIdHandler(ledger))
+	router.POST("/api/transactions", handlers.PostTransactionsHandler(ledger))
 
 	if err := router.Run("localhost:8080"); err != nil {
 		log.Fatalf("Gin server failed to start: %v", err)
