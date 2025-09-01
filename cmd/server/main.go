@@ -4,58 +4,19 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nfongster/ledger/internal/data"
+	"github.com/nfongster/ledger/internal/handlers"
 )
-
-type Transaction struct {
-	ID          int       `json:"id"`
-	Date        time.Time `json:"date"`
-	Description string    `json:"description"`
-	Amount      float64   `json:"amount"`
-	Category    string    `json:"category"`
-	Notes       string    `json:"notes"`
-}
-
-type Ledger struct {
-	transactions []Transaction
-}
-
-func NewLedger() *Ledger {
-	return &Ledger{
-		transactions: make([]Transaction, 0),
-	}
-}
-
-func (l *Ledger) AddTransaction(t Transaction) {
-	l.transactions = append(l.transactions, t)
-}
-
-func (l *Ledger) AddTransactions(tSlice []Transaction) {
-	l.transactions = append(l.transactions, tSlice...)
-}
-
-func (l *Ledger) GetTransaction(id int) (Transaction, error) {
-	for _, t := range l.transactions {
-		if t.ID == id {
-			return t, nil
-		}
-	}
-	return Transaction{}, fmt.Errorf("no transaction with ID %d was found", id)
-}
-
-func (l *Ledger) GetTransactions() []Transaction {
-	return l.transactions
-}
 
 func main() {
 	fmt.Println("Welcome to ledger!")
 
 	// Setup data in memory
-	ledger := NewLedger()
-	ledger.AddTransactions([]Transaction{
+	ledger := data.NewLedger()
+	ledger.AddTransactions([]data.Transaction{
 		{
 			ID:          0,
 			Date:        time.Date(2025, time.October, 16, 0, 0, 0, 0, time.UTC),
@@ -89,53 +50,11 @@ func main() {
 	})
 
 	// Setup API endpoints
-	router.GET("/transactions", getTransactionsHandler(ledger))
-	router.GET("/transactions/:id", getTransactionByIdHandler(ledger))
-	router.POST("/transactions", postTransactionsHandler(ledger))
+	router.GET("/transactions", handlers.GetTransactionsHandler(ledger))
+	router.GET("/transactions/:id", handlers.GetTransactionByIdHandler(ledger))
+	router.POST("/transactions", handlers.PostTransactionsHandler(ledger))
 
 	if err := router.Run("localhost:8080"); err != nil {
 		log.Fatalf("Gin server failed to start: %v", err)
-	}
-}
-
-func getTransactionsHandler(l *Ledger) func(ctx *gin.Context) {
-	return func(ctx *gin.Context) {
-		ctx.IndentedJSON(http.StatusOK, l.GetTransactions())
-	}
-}
-
-func postTransactionsHandler(l *Ledger) func(ctx *gin.Context) {
-	return func(ctx *gin.Context) {
-		var t Transaction
-
-		if err := ctx.BindJSON(&t); err != nil {
-			return
-		}
-
-		l.AddTransaction(t)
-		ctx.IndentedJSON(http.StatusCreated, t)
-	}
-}
-
-func getTransactionByIdHandler(l *Ledger) func(ctx *gin.Context) {
-	return func(ctx *gin.Context) {
-		idstr := ctx.Param("id")
-		id, err := strconv.Atoi(idstr)
-		if err != nil {
-			ctx.IndentedJSON(
-				http.StatusNotFound,
-				gin.H{"message": fmt.Sprintf("Failed to parse id %s!", idstr)})
-			return
-		}
-
-		t, err := l.GetTransaction(id)
-		if err != nil {
-			ctx.IndentedJSON(
-				http.StatusNotFound,
-				gin.H{"message": fmt.Sprintf("Transaction id %d not found!", id)})
-			return
-		}
-
-		ctx.IndentedJSON(http.StatusOK, t)
 	}
 }
