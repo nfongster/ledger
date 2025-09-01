@@ -5,12 +5,23 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/nfongster/ledger/internal/commands"
 )
 
+type Transaction struct {
+	ID          int       `json:"id"`
+	Date        time.Time `json:"date"`
+	Description string    `json:"description"`
+	Amount      float64   `json:"amount"`
+	Category    string    `json:"category"`
+	Notes       string    `json:"notes"`
+}
+
 func main() {
 	fmt.Println("Welcome to ledger!")
+
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
