@@ -27,8 +27,15 @@ func GetCommand(command string) (*Command, bool) {
 	case "transactions":
 		return &Command{
 			Name:        "transactions",
-			Description: "Get a list of all available transactions.",
+			Description: "Get a list of all available transactions, or supply an ID as an argument to get a single transaction.",
 			callback:    transactions,
+		}, true
+
+	case "add":
+		return &Command{
+			Name:        "add",
+			Description: "Add a new entry to the ledger.  Args: date, desc, amount, cat, notes",
+			callback:    add,
 		}, true
 
 	default:

@@ -4,14 +4,26 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
+	"strings"
 )
 
 func transactions(args ...string) {
 	fmt.Println("Getting all transactions...")
 
-	resp, err := http.Get("http://localhost:8080/api/transactions")
+	url := "http://localhost:8080/api/transactions"
+	if len(args) > 0 {
+		id := strings.TrimRight(args[0], "\n")
+		if _, err := strconv.Atoi(id); err != nil {
+			fmt.Println("Argument was invalid!  Please supply an integer ID.")
+			return
+		}
+		url += "/" + id
+	}
+
+	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Printf("Error getting transactions: %v\n", err)
+		fmt.Printf("Error getting transaction(s): %v\n", err)
 		return
 	}
 	defer resp.Body.Close()
@@ -27,5 +39,5 @@ func transactions(args ...string) {
 		return
 	}
 
-	fmt.Printf("Data retrieved!\n%s\n", string(body))
+	fmt.Printf("Data successfully retrieved!\n%s\n", string(body))
 }
