@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +35,15 @@ func (l *Ledger) AddTransaction(t Transaction) {
 
 func (l *Ledger) AddTransactions(tSlice []Transaction) {
 	l.transactions = append(l.transactions, tSlice...)
+}
+
+func (l *Ledger) GetTransaction(id int) (Transaction, error) {
+	for _, t := range l.transactions {
+		if t.ID == id {
+			return t, nil
+		}
+	}
+	return Transaction{}, fmt.Errorf("no transaction with ID %d was found", id)
 }
 
 func (l *Ledger) GetTransactions() []Transaction {
@@ -70,13 +80,17 @@ func main() {
 		},
 	})
 
-	// Setup Gin
 	router := gin.Default()
+
+	// Setup webpages
 	router.GET("/", func(ctx *gin.Context) {
 		html := `<h1>Hello There!</h1>`
 		ctx.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
 	})
+
+	// Setup API endpoints
 	router.GET("/transactions", getTransactionsHandler(ledger))
+	router.GET("/transactions/:id", getTransactionByIdHandler(ledger))
 	router.POST("/transactions", postTransactionsHandler(ledger))
 
 	if err := router.Run("localhost:8080"); err != nil {
@@ -100,5 +114,28 @@ func postTransactionsHandler(l *Ledger) func(ctx *gin.Context) {
 
 		l.AddTransaction(t)
 		ctx.IndentedJSON(http.StatusCreated, t)
+	}
+}
+
+func getTransactionByIdHandler(l *Ledger) func(ctx *gin.Context) {
+	return func(ctx *gin.Context) {
+		idstr := ctx.Param("id")
+		id, err := strconv.Atoi(idstr)
+		if err != nil {
+			ctx.IndentedJSON(
+				http.StatusNotFound,
+				gin.H{"message": fmt.Sprintf("Failed to parse id %s!", idstr)})
+			return
+		}
+
+		t, err := l.GetTransaction(id)
+		if err != nil {
+			ctx.IndentedJSON(
+				http.StatusNotFound,
+				gin.H{"message": fmt.Sprintf("Transaction id %d not found!", id)})
+			return
+		}
+
+		ctx.IndentedJSON(http.StatusOK, t)
 	}
 }
