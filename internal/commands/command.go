@@ -24,6 +24,13 @@ func GetCommand(command string) (*Command, bool) {
 			callback:    quit,
 		}, true
 
+	case "transactions":
+		return &Command{
+			Name:        "transactions",
+			Description: "Get a list of all available transactions.",
+			callback:    transactions,
+		}, true
+
 	default:
 		return nil, false
 	}
