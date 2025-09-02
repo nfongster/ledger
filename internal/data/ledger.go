@@ -13,10 +13,16 @@ func NewLedger() *Ledger {
 }
 
 func (l *Ledger) AddTransaction(t Transaction) {
+	t.ID = l.getNextId()
 	l.transactions = append(l.transactions, t)
 }
 
 func (l *Ledger) AddTransactions(tSlice []Transaction) {
+	nextId := l.getNextId()
+	for _, t := range tSlice {
+		t.ID = nextId
+		nextId++
+	}
 	l.transactions = append(l.transactions, tSlice...)
 }
 
@@ -31,4 +37,14 @@ func (l *Ledger) GetTransaction(id int) (Transaction, error) {
 
 func (l *Ledger) GetTransactions() []Transaction {
 	return l.transactions
+}
+
+func (l *Ledger) getNextId() int {
+	max := -1
+	for _, t := range l.transactions {
+		if t.ID > max {
+			max = t.ID
+		}
+	}
+	return max + 1
 }

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -24,9 +25,7 @@ func add(args ...string) {
 		return
 	}
 
-	// TODO: Trim quotes, if they exist
-	// TODO: Trim newline from final arg
-	dateStr, desc, amountStr, cat, notes := args[0], args[1], args[2], args[3], args[4]
+	dateStr, desc, amountStr, cat, notes := args[0], args[1], args[2], args[3], strings.TrimRight(args[4], "\n")
 	date, err := parseDate(dateStr)
 	if err != nil {
 		fmt.Printf("error parsing date: %v\n", err)
