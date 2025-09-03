@@ -8,4 +8,4 @@ An app that simplifies and automates your budgeting routine.
    ```Bash
    chmod +x ledger.sh
    ```
-3. Execute the bash script to start the REPL app.
+3. Execute the bash script to start the server.
