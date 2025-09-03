@@ -1,0 +1,22 @@
+GET http://localhost:8080/
+
+###
+
+GET http://localhost:8080/api/transactions
+
+###
+
+GET http://localhost:8080/api/transactions/1
+
+###
+
+POST http://localhost:8080/api/transactions
+content-type: application/json
+
+{
+    "date": "2025-12-01T00:00:00Z",
+    "description": "Playstation 2",
+    "amount": 99.99,
+    "category": "Gifts",
+    "notes": "Christmas gift"
+}
