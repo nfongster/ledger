@@ -23,6 +23,7 @@ func main() {
 	fmt.Println("Welcome to ledger!")
 
 	reader := bufio.NewReader(os.Stdin)
+	registry := commands.InitializeCommandRegistry()
 
 	for {
 		fmt.Print("> ")
@@ -31,7 +32,7 @@ func main() {
 		input := strings.Split(str, " ")
 
 		cmd, args := input[0], input[1:]
-		command, exists := commands.GetCommand(cmd)
+		command, exists := registry.GetCommand(cmd)
 		if !exists {
 			fmt.Println("Command does not exist!")
 		} else {
