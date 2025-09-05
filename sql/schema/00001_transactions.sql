@@ -2,9 +2,9 @@
 -- +goose StatementBegin
 CREATE TABLE transactions(
     id UUID PRIMARY KEY,
-    date DATE,
+    date DATE NOT NULL,
     description TEXT NOT NULL,
-    amount FLOAT,
+    amount FLOAT NOT NULL,
     category TEXT NOT NULL,
     notes TEXT
 );
