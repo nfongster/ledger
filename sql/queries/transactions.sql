@@ -10,6 +10,10 @@ RETURNING *;
 SELECT * FROM transactions
 WHERE id = $1;
 
+-- name: GetTransactionsByCategory :many
+SELECT * FROM transactions
+WHERE category = $1;
+
 -- name: GetAllTransactions :many
 SELECT * FROM transactions;
 

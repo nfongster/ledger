@@ -13,15 +13,23 @@ import (
 
 func GetTransactionsHandler(state *s.State) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		transactions, err := state.Database.GetAllTransactions(c)
+		var category = c.Query("category")
+		fmt.Printf("Category: --%s--\n", category)
+
+		var transactions []database.Transaction
+		var err error
+		switch {
+		case category != "":
+			transactions, err = state.Database.GetTransactionsByCategory(c, category)
+		default:
+			transactions, err = state.Database.GetAllTransactions(c)
+		}
+
 		if err != nil {
 			c.IndentedJSON(
 				http.StatusNotFound,
-				gin.H{"message": "Failed to get all transactions from the database!"})
+				gin.H{"message": "Failed to get transactions from the database!"})
 			return
-		}
-		for _, t := range transactions {
-			fmt.Printf("%s\n", t.Description)
 		}
 		c.IndentedJSON(http.StatusOK, transactions)
 	}
@@ -38,7 +46,6 @@ func GetTransactionByIdHandler(state *s.State) func(c *gin.Context) {
 			return
 		}
 
-		fmt.Println(uuid.UUID(id))
 		t, err := state.Database.GetTransactionById(c, uuid.UUID(id))
 		if err != nil {
 			c.IndentedJSON(
