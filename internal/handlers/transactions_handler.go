@@ -20,18 +20,14 @@ func GetTransactionsHandler(state *s.State) func(c *gin.Context) {
 		case category != "":
 			transactions, err := state.Database.GetTransactionsByCategory(c, category)
 			if err != nil {
-				c.IndentedJSON(
-					http.StatusNotFound,
-					gin.H{"message": "Failed to get transactions from the database!"})
+				c.String(http.StatusNotFound, "Failed to get transactions from the database!")
 				return
 			}
 			c.IndentedJSON(http.StatusOK, transactions)
 		default:
 			transactions, err := state.Database.GetAllTransactions(c)
 			if err != nil {
-				c.IndentedJSON(
-					http.StatusNotFound,
-					gin.H{"message": "Failed to get transactions from the database!"})
+				c.String(http.StatusNotFound, "Failed to get transactions from the database!")
 				return
 			}
 			c.IndentedJSON(http.StatusOK, transactions)
@@ -44,17 +40,13 @@ func GetTransactionByIdHandler(state *s.State) func(c *gin.Context) {
 		idstr := c.Param("id")
 		id, err := strconv.Atoi(idstr)
 		if err != nil {
-			c.IndentedJSON(
-				http.StatusNotFound,
-				gin.H{"message": fmt.Sprintf("Failed to parse id %s!", idstr)})
+			c.String(http.StatusNotFound, fmt.Sprintf("Failed to parse id %s!", idstr))
 			return
 		}
 
 		t, err := state.Database.GetTransactionById(c, int32(id))
 		if err != nil {
-			c.IndentedJSON(
-				http.StatusNotFound,
-				gin.H{"message": fmt.Sprintf("Transaction id %d not found!", id)})
+			c.String(http.StatusNotFound, fmt.Sprintf("Transaction id %d not found!", id))
 			return
 		}
 
@@ -66,17 +58,13 @@ func PostTransactionsHandler(state *s.State) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var transactionClient s.TransactionClientParams
 		if err := c.BindJSON(&transactionClient); err != nil {
-			c.IndentedJSON(
-				http.StatusBadRequest,
-				gin.H{"message": "Failed to parse your JSON!"})
+			c.String(http.StatusBadRequest, "Failed to parse your JSON!")
 			return
 		}
 
 		id, err := state.Database.GetOrCreateCategory(c, transactionClient.Category)
 		if err != nil {
-			c.IndentedJSON(
-				http.StatusInternalServerError,
-				gin.H{"message": "Server encountered an issue creating your transaction."})
+			c.String(http.StatusInternalServerError, "Server encountered an issue creating your transaction.")
 			return
 		}
 
@@ -92,9 +80,7 @@ func PostTransactionsHandler(state *s.State) func(c *gin.Context) {
 		})
 
 		if err != nil {
-			c.IndentedJSON(
-				http.StatusInternalServerError,
-				gin.H{"message": "Server encountered an issue creating your transaction."})
+			c.String(http.StatusInternalServerError, "Server encountered an issue creating your transaction.")
 			return
 		}
 
@@ -153,16 +139,12 @@ func DeleteTransactionHandler(state *s.State) func(c *gin.Context) {
 		idstr := c.Param("id")
 		id, err := strconv.Atoi(idstr)
 		if err != nil {
-			c.IndentedJSON(
-				http.StatusNotFound,
-				gin.H{"message": fmt.Sprintf("Failed to parse id %s!", idstr)})
+			c.String(http.StatusNotFound, fmt.Sprintf("Failed to parse id %s!", idstr))
 			return
 		}
 
 		if err = state.Database.DeleteTransaction(c, int32(id)); err != nil {
-			c.IndentedJSON(
-				http.StatusNotFound,
-				gin.H{"message": fmt.Sprintf("Transaction id %d not found!", id)})
+			c.String(http.StatusNotFound, fmt.Sprintf("Transaction id %d not found!", id))
 			return
 		}
 
