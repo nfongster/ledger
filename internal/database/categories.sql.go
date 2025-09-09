@@ -45,6 +45,28 @@ func (q *Queries) GetAllCategories(ctx context.Context) ([]Category, error) {
 	return items, nil
 }
 
+const getOrCreateCategory = `-- name: GetOrCreateCategory :one
+WITH existing_category AS (
+    SELECT id FROM categories WHERE categories.name = $1
+),
+inserted_category AS (
+    INSERT INTO categories (name)
+    SELECT $1
+    WHERE NOT EXISTS (SELECT 1 FROM existing_category)
+    RETURNING id
+)
+SELECT id FROM existing_category
+UNION ALL
+SELECT id FROM inserted_category
+`
+
+func (q *Queries) GetOrCreateCategory(ctx context.Context, name string) (int32, error) {
+	row := q.db.QueryRowContext(ctx, getOrCreateCategory, name)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
 const truncateAllTables = `-- name: TruncateAllTables :exec
 TRUNCATE TABLE transactions, categories RESTART IDENTITY CASCADE
 `

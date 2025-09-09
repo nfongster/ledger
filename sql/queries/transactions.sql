@@ -1,17 +1,3 @@
--- name: GetOrCreateCategory :one
-WITH existing_category AS (
-    SELECT id FROM categories WHERE categories.name = $1
-),
-inserted_category AS (
-    INSERT INTO categories (name)
-    SELECT $1
-    WHERE NOT EXISTS (SELECT 1 FROM existing_category)
-    RETURNING id
-)
-SELECT id FROM existing_category
-UNION ALL
-SELECT id FROM inserted_category;
-
 -- name: CreateTransaction :one
 INSERT INTO transactions (
     date, description, amount, notes, category_id
