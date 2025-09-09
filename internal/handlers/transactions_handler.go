@@ -102,6 +102,52 @@ func PostTransactionsHandler(state *s.State) func(c *gin.Context) {
 	}
 }
 
+func PutTransactionHandler(state *s.State) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		idstr := c.Param("id")
+		id, err := strconv.Atoi(idstr)
+		if err != nil {
+			c.String(http.StatusNotFound, fmt.Sprintf("Failed to parse id %s!", idstr))
+			return
+		}
+
+		var transactionClient s.TransactionClientParams
+		if err := c.BindJSON(&transactionClient); err != nil {
+			c.String(http.StatusBadRequest, "Failed to parse your JSON!")
+			return
+		}
+
+		if _, err = state.Database.GetTransactionById(c, int32(id)); err != nil {
+			c.String(http.StatusBadRequest, fmt.Sprintf("No transaction with id %d was found!", id))
+			return
+		}
+
+		category_id, err := state.Database.GetOrCreateCategory(c, transactionClient.Category)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Server encountered an issue creating your transaction.")
+			return
+		}
+
+		t, err := state.Database.UpdateTransaction(c, database.UpdateTransactionParams{
+			ID:          int32(id),
+			Date:        transactionClient.Date,
+			Description: transactionClient.Description,
+			Amount:      transactionClient.Amount,
+			CategoryID:  category_id,
+			Notes: sql.NullString{
+				String: transactionClient.Notes,
+				Valid:  true,
+			},
+		})
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Server encountered an issue creating your transaction.")
+			return
+		}
+
+		c.IndentedJSON(http.StatusCreated, t)
+	}
+}
+
 func DeleteTransactionHandler(state *s.State) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		idstr := c.Param("id")

@@ -32,3 +32,16 @@ GET http://localhost:8080/api/categories
 ###
 
 DELETE http://localhost:8080/api/transactions/4
+
+###
+
+PUT http://localhost:8080/api/transactions/4
+content-type: application/json
+
+{
+    "date": "2025-12-01T00:00:00Z",
+    "description": "Narya",
+    "amount": 1500.00,
+    "category": "Gifts",
+    "notes": "Christmas present"
+}

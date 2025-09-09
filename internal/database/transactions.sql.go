@@ -187,3 +187,40 @@ func (q *Queries) GetTransactionsByCategory(ctx context.Context, name string) ([
 	}
 	return items, nil
 }
+
+const updateTransaction = `-- name: UpdateTransaction :one
+UPDATE transactions
+SET date = $2, description = $3, amount = $4, category_id = $5, notes = $6
+WHERE id = $1
+RETURNING id, date, description, amount, notes, category_id
+`
+
+type UpdateTransactionParams struct {
+	ID          int32
+	Date        time.Time
+	Description string
+	Amount      float64
+	CategoryID  int32
+	Notes       sql.NullString
+}
+
+func (q *Queries) UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error) {
+	row := q.db.QueryRowContext(ctx, updateTransaction,
+		arg.ID,
+		arg.Date,
+		arg.Description,
+		arg.Amount,
+		arg.CategoryID,
+		arg.Notes,
+	)
+	var i Transaction
+	err := row.Scan(
+		&i.ID,
+		&i.Date,
+		&i.Description,
+		&i.Amount,
+		&i.Notes,
+		&i.CategoryID,
+	)
+	return i, err
+}

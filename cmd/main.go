@@ -51,6 +51,7 @@ func main() {
 	router.GET("/api/transactions", handlers.GetTransactionsHandler(state))
 	router.GET("/api/transactions/:id", handlers.GetTransactionByIdHandler(state))
 	router.POST("/api/transactions", handlers.PostTransactionsHandler(state))
+	router.PUT("/api/transactions/:id", handlers.PutTransactionHandler(state))
 	router.DELETE("/api/transactions/:id", handlers.DeleteTransactionHandler(state))
 
 	router.GET("/api/categories", handlers.GetCategoriesHandler(state))

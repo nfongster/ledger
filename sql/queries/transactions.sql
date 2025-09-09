@@ -29,3 +29,9 @@ DELETE FROM transactions;
 -- name: DeleteTransaction :exec
 DELETE FROM transactions
 WHERE id = $1;
+
+-- name: UpdateTransaction :one
+UPDATE transactions
+SET date = $2, description = $3, amount = $4, category_id = $5, notes = $6
+WHERE id = $1
+RETURNING *;
