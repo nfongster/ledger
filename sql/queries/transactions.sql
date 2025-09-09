@@ -39,3 +39,7 @@ JOIN categories AS c ON t.category_id = c.id;
 
 -- name: DeleteAllTransactions :exec
 DELETE FROM transactions;
+
+-- name: DeleteTransaction :exec
+DELETE FROM transactions
+WHERE id = $1;

@@ -57,6 +57,16 @@ func (q *Queries) DeleteAllTransactions(ctx context.Context) error {
 	return err
 }
 
+const deleteTransaction = `-- name: DeleteTransaction :exec
+DELETE FROM transactions
+WHERE id = $1
+`
+
+func (q *Queries) DeleteTransaction(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteTransaction, id)
+	return err
+}
+
 const getAllTransactions = `-- name: GetAllTransactions :many
 SELECT t.id, t.date, t.description, t.amount, t.notes, c.name AS category
 FROM transactions AS t

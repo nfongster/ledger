@@ -101,3 +101,25 @@ func PostTransactionsHandler(state *s.State) func(c *gin.Context) {
 		c.IndentedJSON(http.StatusCreated, t)
 	}
 }
+
+func DeleteTransactionHandler(state *s.State) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		idstr := c.Param("id")
+		id, err := strconv.Atoi(idstr)
+		if err != nil {
+			c.IndentedJSON(
+				http.StatusNotFound,
+				gin.H{"message": fmt.Sprintf("Failed to parse id %s!", idstr)})
+			return
+		}
+
+		if err = state.Database.DeleteTransaction(c, int32(id)); err != nil {
+			c.IndentedJSON(
+				http.StatusNotFound,
+				gin.H{"message": fmt.Sprintf("Transaction id %d not found!", id)})
+			return
+		}
+
+		c.String(http.StatusOK, fmt.Sprintf("Successfully deleted transaction id %d.", id))
+	}
+}
