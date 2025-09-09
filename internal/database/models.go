@@ -7,15 +7,18 @@ package database
 import (
 	"database/sql"
 	"time"
-
-	"github.com/google/uuid"
 )
 
+type Category struct {
+	ID   int32
+	Name string
+}
+
 type Transaction struct {
-	ID          uuid.UUID
+	ID          int32
 	Date        time.Time
 	Description string
 	Amount      float64
-	Category    string
 	Notes       sql.NullString
+	CategoryID  int32
 }

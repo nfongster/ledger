@@ -9,36 +9,32 @@ import (
 	"context"
 	"database/sql"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 const createTransaction = `-- name: CreateTransaction :one
 INSERT INTO transactions (
-    id, date, description, amount, category, notes
+    date, description, amount, notes, category_id
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
+    $1, $2, $3, $4, $5
 )
-RETURNING id, date, description, amount, category, notes
+RETURNING id, date, description, amount, notes, category_id
 `
 
 type CreateTransactionParams struct {
-	ID          uuid.UUID
 	Date        time.Time
 	Description string
 	Amount      float64
-	Category    string
 	Notes       sql.NullString
+	CategoryID  int32
 }
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
 	row := q.db.QueryRowContext(ctx, createTransaction,
-		arg.ID,
 		arg.Date,
 		arg.Description,
 		arg.Amount,
-		arg.Category,
 		arg.Notes,
+		arg.CategoryID,
 	)
 	var i Transaction
 	err := row.Scan(
@@ -46,8 +42,8 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 		&i.Date,
 		&i.Description,
 		&i.Amount,
-		&i.Category,
 		&i.Notes,
+		&i.CategoryID,
 	)
 	return i, err
 }
@@ -62,25 +58,36 @@ func (q *Queries) DeleteAllTransactions(ctx context.Context) error {
 }
 
 const getAllTransactions = `-- name: GetAllTransactions :many
-SELECT id, date, description, amount, category, notes FROM transactions
+SELECT t.id, t.date, t.description, t.amount, t.notes, c.name AS category
+FROM transactions AS t
+JOIN categories AS c ON t.category_id = c.id
 `
 
-func (q *Queries) GetAllTransactions(ctx context.Context) ([]Transaction, error) {
+type GetAllTransactionsRow struct {
+	ID          int32
+	Date        time.Time
+	Description string
+	Amount      float64
+	Notes       sql.NullString
+	Category    string
+}
+
+func (q *Queries) GetAllTransactions(ctx context.Context) ([]GetAllTransactionsRow, error) {
 	rows, err := q.db.QueryContext(ctx, getAllTransactions)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Transaction
+	var items []GetAllTransactionsRow
 	for rows.Next() {
-		var i Transaction
+		var i GetAllTransactionsRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Date,
 			&i.Description,
 			&i.Amount,
-			&i.Category,
 			&i.Notes,
+			&i.Category,
 		); err != nil {
 			return nil, err
 		}
@@ -95,46 +102,83 @@ func (q *Queries) GetAllTransactions(ctx context.Context) ([]Transaction, error)
 	return items, nil
 }
 
-const getTransactionById = `-- name: GetTransactionById :one
-SELECT id, date, description, amount, category, notes FROM transactions
-WHERE id = $1
+const getOrCreateCategory = `-- name: GetOrCreateCategory :one
+INSERT INTO categories (name)
+VALUES ($1)
+ON CONFLICT (name) DO UPDATE
+SET name = excluded.name
+RETURNING id
 `
 
-func (q *Queries) GetTransactionById(ctx context.Context, id uuid.UUID) (Transaction, error) {
+func (q *Queries) GetOrCreateCategory(ctx context.Context, name string) (int32, error) {
+	row := q.db.QueryRowContext(ctx, getOrCreateCategory, name)
+	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const getTransactionById = `-- name: GetTransactionById :one
+SELECT t.id, t.date, t.description, t.amount, t.notes, c.name AS category
+FROM transactions AS t
+JOIN categories AS c ON t.category_id = c.id
+WHERE t.id = $1
+`
+
+type GetTransactionByIdRow struct {
+	ID          int32
+	Date        time.Time
+	Description string
+	Amount      float64
+	Notes       sql.NullString
+	Category    string
+}
+
+func (q *Queries) GetTransactionById(ctx context.Context, id int32) (GetTransactionByIdRow, error) {
 	row := q.db.QueryRowContext(ctx, getTransactionById, id)
-	var i Transaction
+	var i GetTransactionByIdRow
 	err := row.Scan(
 		&i.ID,
 		&i.Date,
 		&i.Description,
 		&i.Amount,
-		&i.Category,
 		&i.Notes,
+		&i.Category,
 	)
 	return i, err
 }
 
 const getTransactionsByCategory = `-- name: GetTransactionsByCategory :many
-SELECT id, date, description, amount, category, notes FROM transactions
-WHERE category = $1
+SELECT t.id, t.date, t.description, t.amount, t.notes, c.name AS category
+FROM transactions AS t
+JOIN categories AS c ON t.category_id = c.id
+WHERE c.name = $1
 `
 
-func (q *Queries) GetTransactionsByCategory(ctx context.Context, category string) ([]Transaction, error) {
-	rows, err := q.db.QueryContext(ctx, getTransactionsByCategory, category)
+type GetTransactionsByCategoryRow struct {
+	ID          int32
+	Date        time.Time
+	Description string
+	Amount      float64
+	Notes       sql.NullString
+	Category    string
+}
+
+func (q *Queries) GetTransactionsByCategory(ctx context.Context, name string) ([]GetTransactionsByCategoryRow, error) {
+	rows, err := q.db.QueryContext(ctx, getTransactionsByCategory, name)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Transaction
+	var items []GetTransactionsByCategoryRow
 	for rows.Next() {
-		var i Transaction
+		var i GetTransactionsByCategoryRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Date,
 			&i.Description,
 			&i.Amount,
-			&i.Category,
 			&i.Notes,
+			&i.Category,
 		); err != nil {
 			return nil, err
 		}

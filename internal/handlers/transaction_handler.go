@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/nfongster/ledger/internal/database"
 	s "github.com/nfongster/ledger/internal/structs"
 )
@@ -16,29 +16,33 @@ func GetTransactionsHandler(state *s.State) func(c *gin.Context) {
 		var category = c.Query("category")
 		fmt.Printf("Category: --%s--\n", category)
 
-		var transactions []database.Transaction
-		var err error
 		switch {
 		case category != "":
-			transactions, err = state.Database.GetTransactionsByCategory(c, category)
+			transactions, err := state.Database.GetTransactionsByCategory(c, category)
+			if err != nil {
+				c.IndentedJSON(
+					http.StatusNotFound,
+					gin.H{"message": "Failed to get transactions from the database!"})
+				return
+			}
+			c.IndentedJSON(http.StatusOK, transactions)
 		default:
-			transactions, err = state.Database.GetAllTransactions(c)
+			transactions, err := state.Database.GetAllTransactions(c)
+			if err != nil {
+				c.IndentedJSON(
+					http.StatusNotFound,
+					gin.H{"message": "Failed to get transactions from the database!"})
+				return
+			}
+			c.IndentedJSON(http.StatusOK, transactions)
 		}
-
-		if err != nil {
-			c.IndentedJSON(
-				http.StatusNotFound,
-				gin.H{"message": "Failed to get transactions from the database!"})
-			return
-		}
-		c.IndentedJSON(http.StatusOK, transactions)
 	}
 }
 
 func GetTransactionByIdHandler(state *s.State) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		idstr := c.Param("id")
-		id, err := uuid.Parse(idstr)
+		id, err := strconv.Atoi(idstr)
 		if err != nil {
 			c.IndentedJSON(
 				http.StatusNotFound,
@@ -46,7 +50,7 @@ func GetTransactionByIdHandler(state *s.State) func(c *gin.Context) {
 			return
 		}
 
-		t, err := state.Database.GetTransactionById(c, uuid.UUID(id))
+		t, err := state.Database.GetTransactionById(c, int32(id))
 		if err != nil {
 			c.IndentedJSON(
 				http.StatusNotFound,
@@ -61,7 +65,6 @@ func GetTransactionByIdHandler(state *s.State) func(c *gin.Context) {
 func PostTransactionsHandler(state *s.State) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		var transactionClient s.TransactionClientParams
-
 		if err := c.BindJSON(&transactionClient); err != nil {
 			c.IndentedJSON(
 				http.StatusBadRequest,
@@ -69,16 +72,23 @@ func PostTransactionsHandler(state *s.State) func(c *gin.Context) {
 			return
 		}
 
+		id, err := state.Database.GetOrCreateCategory(c, transactionClient.Category)
+		if err != nil {
+			c.IndentedJSON(
+				http.StatusInternalServerError,
+				gin.H{"message": "Server encountered an issue creating your transaction."})
+			return
+		}
+
 		t, err := state.Database.CreateTransaction(c, database.CreateTransactionParams{
-			ID:          uuid.New(),
 			Date:        transactionClient.Date,
 			Description: transactionClient.Description,
 			Amount:      transactionClient.Amount,
-			Category:    transactionClient.Category,
 			Notes: sql.NullString{
 				String: transactionClient.Notes,
 				Valid:  transactionClient.Notes != "",
 			},
+			CategoryID: id,
 		})
 
 		if err != nil {

@@ -6,7 +6,11 @@ GET http://localhost:8080/api/transactions
 
 ###
 
-GET http://localhost:8080/api/transactions/72216eaf-3bc0-46d0-9104-97a8fd2b5db6
+GET http://localhost:8080/api/transactions/4
+
+###
+
+GET http://localhost:8080/api/transactions?category=Groceries
 
 ###
 
