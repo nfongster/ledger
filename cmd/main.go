@@ -50,9 +50,10 @@ func main() {
 	// --- Setup API endpoints ---
 	router.GET("/api/transactions", handlers.GetTransactionsHandler(state))
 	router.GET("/api/transactions/:id", handlers.GetTransactionByIdHandler(state))
-	//router.GET("/api/categories")
-	//router.GET("/api/categories/:category_name/average")
 	router.POST("/api/transactions", handlers.PostTransactionsHandler(state))
+
+	router.GET("/api/categories", handlers.GetCategoriesHandler(state))
+	//router.GET("/api/categories/:category_name/average")
 
 	if err := router.Run("localhost:8080"); err != nil {
 		log.Fatalf("Gin server failed to start: %v", err)

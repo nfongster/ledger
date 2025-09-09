@@ -24,3 +24,7 @@ content-type: application/json
     "category": "Gifts",
     "notes": "Christmas present"
 }
+
+###
+
+GET http://localhost:8080/api/categories

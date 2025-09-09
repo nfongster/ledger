@@ -1,9 +1,16 @@
 -- name: GetOrCreateCategory :one
-INSERT INTO categories (name)
-VALUES ($1)
-ON CONFLICT (name) DO UPDATE
-SET name = excluded.name
-RETURNING id;
+WITH existing_category AS (
+    SELECT id FROM categories WHERE categories.name = $1
+),
+inserted_category AS (
+    INSERT INTO categories (name)
+    SELECT $1
+    WHERE NOT EXISTS (SELECT 1 FROM existing_category)
+    RETURNING id
+)
+SELECT id FROM existing_category
+UNION ALL
+SELECT id FROM inserted_category;
 
 -- name: CreateTransaction :one
 INSERT INTO transactions (

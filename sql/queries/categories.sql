@@ -3,3 +3,6 @@ DELETE FROM categories;
 
 -- name: TruncateAllTables :exec
 TRUNCATE TABLE transactions, categories RESTART IDENTITY CASCADE;
+
+-- name: GetAllCategories :many
+SELECT * FROM categories;

@@ -18,6 +18,33 @@ func (q *Queries) DeleteAllCategories(ctx context.Context) error {
 	return err
 }
 
+const getAllCategories = `-- name: GetAllCategories :many
+SELECT id, name FROM categories
+`
+
+func (q *Queries) GetAllCategories(ctx context.Context) ([]Category, error) {
+	rows, err := q.db.QueryContext(ctx, getAllCategories)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Category
+	for rows.Next() {
+		var i Category
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const truncateAllTables = `-- name: TruncateAllTables :exec
 TRUNCATE TABLE transactions, categories RESTART IDENTITY CASCADE
 `
