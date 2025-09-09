@@ -57,7 +57,8 @@ func main() {
 	router.GET("/api/categories", handlers.GetCategoriesHandler(state))
 	//router.GET("/api/categories/:category_name/average")
 
-	if err := router.Run("localhost:8080"); err != nil {
+	// --- Run server and accept connections from any IP address on host machine (WSL, Windows host, etc.) ---
+	if err := router.Run("0.0.0.0:8080"); err != nil {
 		log.Fatalf("Gin server failed to start: %v", err)
 	}
 }
