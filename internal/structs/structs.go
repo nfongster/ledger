@@ -2,7 +2,6 @@ package data
 
 import (
 	"encoding/json"
-	"fmt"
 	"os"
 	"time"
 
@@ -27,7 +26,6 @@ func LoadConfig() (*Config, error) {
 	decoder := json.NewDecoder(file)
 	var config Config
 	decoder.Decode(&config)
-	fmt.Println("success!")
 	return &config, err
 }
 
