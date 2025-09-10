@@ -119,3 +119,21 @@ func DeleteBudgetHandler(state *s.State) func(c *gin.Context) {
 		}
 	}
 }
+
+func GetBudgetStatusHandler(state *s.State) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		// idstr := c.Param("id")
+		// id, err := strconv.Atoi(idstr)
+		// if err != nil {
+		// 	c.String(http.StatusNotFound, fmt.Sprintf("Failed to parse id %s!", idstr))
+		// 	return
+		// }
+
+		// Get budget by ID from DB
+		// Compute budget end date (start + period)
+		// Sum all transactions in between start and end dates
+		// Subtract from budget target to get difference
+		// Add status based on this difference
+		// Return JSON to client
+	}
+}

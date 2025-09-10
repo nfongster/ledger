@@ -55,10 +55,11 @@ func main() {
 	router.DELETE("/api/transactions/:id", handlers.DeleteTransactionHandler(state))
 
 	router.GET("/api/categories", handlers.GetCategoriesHandler(state))
-	//router.GET("/api/categories/:category_name/average")
+	router.GET("/api/categories/:id/spending", handlers.GetCurrentSpendingHandler(state))
 
 	router.GET("/api/budgets", handlers.GetBudgetsHandler(state))
 	router.GET("/api/budgets/:id", handlers.GetBudgetByIdHandler(state))
+	router.GET("/api/budgets/:id/status", handlers.GetBudgetStatusHandler(state))
 	router.POST("/api/budgets", handlers.PostBudgetHandler(state))
 	router.PUT("/api/budgets/:id", handlers.PutBudgetHandler(state))
 	router.DELETE("/api/budgets/:id", handlers.DeleteBudgetHandler(state))

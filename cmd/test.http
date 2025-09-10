@@ -48,6 +48,32 @@ content-type: application/json
 
 ###
 
+POST http://localhost:8080/api/transactions
+content-type: application/json
+
+{
+    "date": "2025-10-17T00:00:00Z",
+    "description": "Apples",
+    "amount": 3.50,
+    "category": "Groceries",
+    "notes": ""
+}
+
+###
+
+POST http://localhost:8080/api/transactions
+content-type: application/json
+
+{
+    "date": "2025-11-30T00:00:00Z",
+    "description": "Bananas",
+    "amount": 4.00,
+    "category": "Groceries",
+    "notes": ""
+}
+
+###
+
 GET http://localhost:8080/api/budgets
 
 ###
@@ -82,3 +108,15 @@ content-type: application/json
 ###
 
 DELETE http://localhost:8080/api/budgets/1
+
+###
+
+GET http://localhost:8080/api/categories/1/spending
+
+###
+
+GET http://localhost:8080/api/categories/1/spending?period_start=2025-10-16&period_end=2025-10-17
+
+###
+
+GET http://localhost:8080/api/budgets/1/status

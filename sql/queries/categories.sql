@@ -20,3 +20,19 @@ inserted_category AS (
 SELECT id FROM existing_category
 UNION ALL
 SELECT id FROM inserted_category;
+
+-- name: GetSpendingBetweenStartAndEnd :one
+SELECT CAST(SUM(amount) AS FLOAT) FROM transactions
+WHERE category_id = $1 AND date BETWEEN sqlc.arg(Start_Date) AND sqlc.arg(End_Date);
+
+-- name: GetSpendingSinceStart :one
+SELECT CAST(SUM(amount) AS FLOAT) FROM transactions
+WHERE category_id = $1 AND date >= sqlc.arg(Start_Date);
+
+-- name: GetSpendingUntilEnd :one
+SELECT CAST(SUM(amount) AS FLOAT) FROM transactions
+WHERE category_id = $1 AND date <= sqlc.arg(End_Date);
+
+-- name: GetSpendingAllTime :one
+SELECT CAST(SUM(amount) AS FLOAT) FROM transactions
+WHERE category_id = $1;

@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"time"
 )
 
 const deleteAllCategories = `-- name: DeleteAllCategories :exec
@@ -65,6 +66,70 @@ func (q *Queries) GetOrCreateCategory(ctx context.Context, name string) (int32, 
 	var id int32
 	err := row.Scan(&id)
 	return id, err
+}
+
+const getSpendingAllTime = `-- name: GetSpendingAllTime :one
+SELECT CAST(SUM(amount) AS FLOAT) FROM transactions
+WHERE category_id = $1
+`
+
+func (q *Queries) GetSpendingAllTime(ctx context.Context, categoryID int32) (float64, error) {
+	row := q.db.QueryRowContext(ctx, getSpendingAllTime, categoryID)
+	var column_1 float64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const getSpendingBetweenStartAndEnd = `-- name: GetSpendingBetweenStartAndEnd :one
+SELECT CAST(SUM(amount) AS FLOAT) FROM transactions
+WHERE category_id = $1 AND date BETWEEN $2 AND $3
+`
+
+type GetSpendingBetweenStartAndEndParams struct {
+	CategoryID int32
+	StartDate  time.Time
+	EndDate    time.Time
+}
+
+func (q *Queries) GetSpendingBetweenStartAndEnd(ctx context.Context, arg GetSpendingBetweenStartAndEndParams) (float64, error) {
+	row := q.db.QueryRowContext(ctx, getSpendingBetweenStartAndEnd, arg.CategoryID, arg.StartDate, arg.EndDate)
+	var column_1 float64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const getSpendingSinceStart = `-- name: GetSpendingSinceStart :one
+SELECT CAST(SUM(amount) AS FLOAT) FROM transactions
+WHERE category_id = $1 AND date >= $2
+`
+
+type GetSpendingSinceStartParams struct {
+	CategoryID int32
+	StartDate  time.Time
+}
+
+func (q *Queries) GetSpendingSinceStart(ctx context.Context, arg GetSpendingSinceStartParams) (float64, error) {
+	row := q.db.QueryRowContext(ctx, getSpendingSinceStart, arg.CategoryID, arg.StartDate)
+	var column_1 float64
+	err := row.Scan(&column_1)
+	return column_1, err
+}
+
+const getSpendingUntilEnd = `-- name: GetSpendingUntilEnd :one
+SELECT CAST(SUM(amount) AS FLOAT) FROM transactions
+WHERE category_id = $1 AND date <= $2
+`
+
+type GetSpendingUntilEndParams struct {
+	CategoryID int32
+	EndDate    time.Time
+}
+
+func (q *Queries) GetSpendingUntilEnd(ctx context.Context, arg GetSpendingUntilEndParams) (float64, error) {
+	row := q.db.QueryRowContext(ctx, getSpendingUntilEnd, arg.CategoryID, arg.EndDate)
+	var column_1 float64
+	err := row.Scan(&column_1)
+	return column_1, err
 }
 
 const truncateAllTables = `-- name: TruncateAllTables :exec
