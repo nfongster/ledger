@@ -6,8 +6,64 @@ package database
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"fmt"
 	"time"
 )
+
+type Period string
+
+const (
+	PeriodWeekly    Period = "weekly"
+	PeriodMonthly   Period = "monthly"
+	PeriodBiMonthly Period = "bi-monthly"
+	PeriodQuarterly Period = "quarterly"
+	PeriodYearly    Period = "yearly"
+)
+
+func (e *Period) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Period(s)
+	case string:
+		*e = Period(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Period: %T", src)
+	}
+	return nil
+}
+
+type NullPeriod struct {
+	Period Period
+	Valid  bool // Valid is true if Period is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPeriod) Scan(value interface{}) error {
+	if value == nil {
+		ns.Period, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Period.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPeriod) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return string(ns.Period), nil
+}
+
+type Budget struct {
+	ID           int32
+	TargetAmount float64
+	TimePeriod   Period
+	StartDate    time.Time
+	Notes        sql.NullString
+	CategoryID   int32
+}
 
 type Category struct {
 	ID   int32

@@ -77,45 +77,44 @@ func ResetDatabase(q *database.Queries) {
 }
 
 func SeedDatabase(q *database.Queries) {
-	id, err := q.GetOrCreateCategory(context.Background(), "Groceries")
+	// --- Set Transactions ---
+	groceries_id, err := q.GetOrCreateCategory(context.Background(), "Groceries")
 	if err != nil {
 		log.Fatal(err)
 	}
-	t, err := q.CreateTransaction(context.Background(), database.CreateTransactionParams{
+	_, err = q.CreateTransaction(context.Background(), database.CreateTransactionParams{
 		Date:        time.Date(2025, time.October, 16, 0, 0, 0, 0, time.UTC),
 		Description: "Lembas",
 		Amount:      9.99,
-		CategoryID:  id,
+		CategoryID:  groceries_id,
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Transaction: %v", t)
 
-	id, err = q.GetOrCreateCategory(context.Background(), "Groceries")
+	_, err = q.GetOrCreateCategory(context.Background(), "Groceries")
 	if err != nil {
 		log.Fatal(err)
 	}
-	t, err = q.CreateTransaction(context.Background(), database.CreateTransactionParams{
+	_, err = q.CreateTransaction(context.Background(), database.CreateTransactionParams{
 		Date:        time.Date(2025, time.October, 16, 0, 0, 0, 0, time.UTC),
 		Description: "Old Toby",
 		Amount:      49.99,
-		CategoryID:  id,
+		CategoryID:  groceries_id,
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Transaction: %v", t)
 
-	id, err = q.GetOrCreateCategory(context.Background(), "Eating Out")
+	eatingout_id, err := q.GetOrCreateCategory(context.Background(), "Eating Out")
 	if err != nil {
 		log.Fatal(err)
 	}
-	t, err = q.CreateTransaction(context.Background(), database.CreateTransactionParams{
+	_, err = q.CreateTransaction(context.Background(), database.CreateTransactionParams{
 		Date:        time.Date(2025, time.October, 17, 0, 0, 0, 0, time.UTC),
 		Description: "Shultzy's",
 		Amount:      25.00,
-		CategoryID:  id,
+		CategoryID:  eatingout_id,
 		Notes: sql.NullString{
 			String: "Bratz n beerz with the boyz",
 			Valid:  true},
@@ -123,5 +122,15 @@ func SeedDatabase(q *database.Queries) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("Transaction: %v", t)
+
+	// --- Set Budgets ---
+	_, err = q.CreateBudget(context.Background(), database.CreateBudgetParams{
+		TargetAmount: 50.00,
+		TimePeriod:   database.PeriodWeekly,
+		StartDate:    time.Date(2025, time.October, 13, 0, 0, 0, 0, time.UTC),
+		CategoryID:   groceries_id,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
 }
