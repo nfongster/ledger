@@ -145,9 +145,8 @@ func DeleteTransactionHandler(state *s.State) func(c *gin.Context) {
 
 		if err = state.Database.DeleteTransaction(c, int32(id)); err != nil {
 			c.String(http.StatusNotFound, fmt.Sprintf("Transaction id %d not found!", id))
-			return
+		} else {
+			c.String(http.StatusOK, fmt.Sprintf("Successfully deleted transaction id %d.", id))
 		}
-
-		c.String(http.StatusOK, fmt.Sprintf("Successfully deleted transaction id %d.", id))
 	}
 }

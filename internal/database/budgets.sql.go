@@ -48,6 +48,35 @@ func (q *Queries) CreateBudget(ctx context.Context, arg CreateBudgetParams) (Bud
 	return i, err
 }
 
+const deleteBudget = `-- name: DeleteBudget :exec
+DELETE FROM budgets
+WHERE id = $1
+`
+
+func (q *Queries) DeleteBudget(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteBudget, id)
+	return err
+}
+
+const getBudgetById = `-- name: GetBudgetById :one
+SELECT id, target_amount, time_period, start_date, notes, category_id FROM budgets
+WHERE id = $1
+`
+
+func (q *Queries) GetBudgetById(ctx context.Context, id int32) (Budget, error) {
+	row := q.db.QueryRowContext(ctx, getBudgetById, id)
+	var i Budget
+	err := row.Scan(
+		&i.ID,
+		&i.TargetAmount,
+		&i.TimePeriod,
+		&i.StartDate,
+		&i.Notes,
+		&i.CategoryID,
+	)
+	return i, err
+}
+
 const getBudgets = `-- name: GetBudgets :many
 SELECT id, target_amount, time_period, start_date, notes, category_id FROM budgets
 `
@@ -80,4 +109,41 @@ func (q *Queries) GetBudgets(ctx context.Context) ([]Budget, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateBudget = `-- name: UpdateBudget :one
+UPDATE budgets
+SET target_amount = $2, time_period = $3, start_date = $4, notes = $5, category_id = $6
+WHERE id = $1
+RETURNING id, target_amount, time_period, start_date, notes, category_id
+`
+
+type UpdateBudgetParams struct {
+	ID           int32
+	TargetAmount float64
+	TimePeriod   Period
+	StartDate    time.Time
+	Notes        sql.NullString
+	CategoryID   int32
+}
+
+func (q *Queries) UpdateBudget(ctx context.Context, arg UpdateBudgetParams) (Budget, error) {
+	row := q.db.QueryRowContext(ctx, updateBudget,
+		arg.ID,
+		arg.TargetAmount,
+		arg.TimePeriod,
+		arg.StartDate,
+		arg.Notes,
+		arg.CategoryID,
+	)
+	var i Budget
+	err := row.Scan(
+		&i.ID,
+		&i.TargetAmount,
+		&i.TimePeriod,
+		&i.StartDate,
+		&i.Notes,
+		&i.CategoryID,
+	)
+	return i, err
 }

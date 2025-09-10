@@ -38,3 +38,11 @@ type TransactionClientParams struct {
 	Category    string    `json:"category"`
 	Notes       string    `json:"notes"`
 }
+
+type BudgetClientParams struct {
+	TargetAmount float64   `json:"target_amount"`
+	TimePeriod   string    `json:"time_period"`
+	StartDate    time.Time `json:"start_date"`
+	Notes        string    `json:"notes"`
+	CategoryId   int       `json:"category_id"`
+}
