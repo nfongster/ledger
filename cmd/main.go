@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -42,10 +41,11 @@ func main() {
 	router := gin.Default()
 
 	// --- Setup webpages ---
-	router.GET("/", func(ctx *gin.Context) {
-		html := `<h1>Hello There!</h1>`
-		ctx.Data(http.StatusOK, "text/html; charset=utf-8", []byte(html))
-	})
+	handlerIndex := func(c *gin.Context) {
+		c.File("web/html/index.html")
+	}
+	router.GET("/", handlerIndex)
+	router.GET("/index", handlerIndex)
 
 	// --- Setup API endpoints ---
 	router.GET("/api/transactions", handlers.GetTransactionsHandler(state))
