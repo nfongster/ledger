@@ -77,6 +77,71 @@ func (q *Queries) GetBudgetById(ctx context.Context, id int32) (Budget, error) {
 	return i, err
 }
 
+const getBudgetStatus = `-- name: GetBudgetStatus :one
+WITH budget_info AS (
+    SELECT 
+        id AS budget_id,
+        category_id, 
+        time_period,
+        target_amount,
+        start_date, 
+        start_date + 
+            CASE time_period
+                WHEN 'weekly' THEN INTERVAL '7 DAY'
+                WHEN 'monthly' THEN INTERVAL '1 MONTH'
+                WHEN 'bi-monthly' THEN INTERVAL '2 MONTHS'
+                WHEN 'quarterly' THEN INTERVAL '3 MONTHS'
+                WHEN 'yearly' THEN INTERVAL '1 YEAR'
+            END AS end_date 
+    FROM budgets
+    WHERE budgets.id = $1
+),
+transactions_sum AS (
+    SELECT 
+        bi.budget_id,
+        bi.category_id,
+        bi.time_period,
+        bi.target_amount,
+        COALESCE(SUM(t.amount), 0) AS current_spent
+    FROM transactions t
+    JOIN budget_info bi ON t.category_id = bi.category_id
+    WHERE t.date BETWEEN bi.start_date AND bi.end_date
+    GROUP BY
+        bi.budget_id,
+        bi.category_id,
+        bi.time_period,
+        bi.target_amount
+)
+SELECT
+    budget_id,
+    category_id,
+    time_period,
+    target_amount,
+    current_spent
+FROM transactions_sum
+`
+
+type GetBudgetStatusRow struct {
+	BudgetID     int32
+	CategoryID   int32
+	TimePeriod   Period
+	TargetAmount float64
+	CurrentSpent interface{}
+}
+
+func (q *Queries) GetBudgetStatus(ctx context.Context, id int32) (GetBudgetStatusRow, error) {
+	row := q.db.QueryRowContext(ctx, getBudgetStatus, id)
+	var i GetBudgetStatusRow
+	err := row.Scan(
+		&i.BudgetID,
+		&i.CategoryID,
+		&i.TimePeriod,
+		&i.TargetAmount,
+		&i.CurrentSpent,
+	)
+	return i, err
+}
+
 const getBudgets = `-- name: GetBudgets :many
 SELECT id, target_amount, time_period, start_date, notes, category_id FROM budgets
 `
