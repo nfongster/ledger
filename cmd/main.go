@@ -41,12 +41,18 @@ func main() {
 	router := gin.Default()
 
 	// --- Setup webpages ---
-	router.Static("/assets", "./web/html")
 	handlerIndex := func(c *gin.Context) {
 		c.File("web/html/index.html")
 	}
 	router.GET("/", handlerIndex)
 	router.GET("/index", handlerIndex)
+
+	router.GET("/transactions", func(c *gin.Context) {
+		c.File("web/html/transactions.html")
+	})
+	router.GET("/budgets", func(c *gin.Context) {
+		c.File("web/html/budgets.html")
+	})
 
 	// --- Setup API endpoints ---
 	apiGroup := router.Group("/api")
