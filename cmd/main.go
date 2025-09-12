@@ -41,6 +41,7 @@ func main() {
 	router := gin.Default()
 
 	// --- Setup webpages ---
+	router.Static("/assets", "./web/html")
 	handlerIndex := func(c *gin.Context) {
 		c.File("web/html/index.html")
 	}
@@ -48,21 +49,24 @@ func main() {
 	router.GET("/index", handlerIndex)
 
 	// --- Setup API endpoints ---
-	router.GET("/api/transactions", handlers.GetTransactionsHandler(state))
-	router.GET("/api/transactions/:id", handlers.GetTransactionByIdHandler(state))
-	router.POST("/api/transactions", handlers.PostTransactionsHandler(state))
-	router.PUT("/api/transactions/:id", handlers.PutTransactionHandler(state))
-	router.DELETE("/api/transactions/:id", handlers.DeleteTransactionHandler(state))
+	apiGroup := router.Group("/api")
+	{
+		apiGroup.GET("/transactions", handlers.GetTransactionsHandler(state))
+		apiGroup.GET("/transactions/:id", handlers.GetTransactionByIdHandler(state))
+		apiGroup.POST("/transactions", handlers.PostTransactionsHandler(state))
+		apiGroup.PUT("/transactions/:id", handlers.PutTransactionHandler(state))
+		apiGroup.DELETE("/transactions/:id", handlers.DeleteTransactionHandler(state))
 
-	router.GET("/api/categories", handlers.GetCategoriesHandler(state))
-	router.GET("/api/categories/:id/spending", handlers.GetCurrentSpendingHandler(state))
+		apiGroup.GET("/categories", handlers.GetCategoriesHandler(state))
+		apiGroup.GET("/categories/:id/spending", handlers.GetCurrentSpendingHandler(state))
 
-	router.GET("/api/budgets", handlers.GetBudgetsHandler(state))
-	router.GET("/api/budgets/:id", handlers.GetBudgetByIdHandler(state))
-	router.GET("/api/budgets/:id/status", handlers.GetBudgetStatusHandler(state))
-	router.POST("/api/budgets", handlers.PostBudgetHandler(state))
-	router.PUT("/api/budgets/:id", handlers.PutBudgetHandler(state))
-	router.DELETE("/api/budgets/:id", handlers.DeleteBudgetHandler(state))
+		apiGroup.GET("/budgets", handlers.GetBudgetsHandler(state))
+		apiGroup.GET("/budgets/:id", handlers.GetBudgetByIdHandler(state))
+		apiGroup.GET("/budgets/:id/status", handlers.GetBudgetStatusHandler(state))
+		apiGroup.POST("/budgets", handlers.PostBudgetHandler(state))
+		apiGroup.PUT("/budgets/:id", handlers.PutBudgetHandler(state))
+		apiGroup.DELETE("/budgets/:id", handlers.DeleteBudgetHandler(state))
+	}
 
 	// --- Run server and accept connections from any IP address on host machine (WSL, Windows host, etc.) ---
 	if err := router.Run("0.0.0.0:8080"); err != nil {
