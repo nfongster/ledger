@@ -53,6 +53,12 @@ func main() {
 	router.GET("/budgets", func(c *gin.Context) {
 		c.File("web/html/budgets.html")
 	})
+	jsGroup := router.Group("/assets")
+	{
+		jsGroup.GET("/transactions.js", func(c *gin.Context) {
+			c.File("web/js/transactions.js")
+		})
+	}
 
 	// --- Setup API endpoints ---
 	apiGroup := router.Group("/api")
