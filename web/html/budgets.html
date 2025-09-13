@@ -12,6 +12,42 @@
 
         <a href="#" id="fetch-budgets-btn" class="btn btn-success">Fetch All</a>
         <a href="/" class="btn btn-primary">Home</a>
+
+        <div class="p-3 my-4">
+        <form>
+            <h3>Add New Budget</h3>
+            <div class="row">
+            <div class="col mb-3">
+                <label for="budget-category" class="form-label">Category</label>
+                <input type="text" class="form-control" id="budget-category">
+            </div>
+
+            <div class="col mb-3">
+                <label for="transaction-category" class="form-label">Category</label>
+                <select class="form-select" id="transaction-category">
+                    <option selected disabled>Select a category</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Monthly">Monthly</option>
+                    <option value="Bi-Monthly">Bi-Monthly</option>
+                    <option value="Quarterly">Quarterly</option>
+                    <option value="Yearly">Yearly</option>
+                </select>
+            </div>
+
+            <div class="col mb-3">
+                <label for="budget-start-date" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="budget-start-date">
+            </div>
+
+            <div class="col mb-3">
+                <label for="budget-amount" class="form-label">Budget (USD)</label>
+                <input type="number" class="form-control" id="budget-amount" step="0.01">
+            </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" id="add-transaction-btn">Add</button>
+        </form>
+        </div>
         
         <div class="p-3 my-4 rounded text-white">
             <table class="table table-secondary table-bordered">
