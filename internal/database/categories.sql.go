@@ -46,6 +46,18 @@ func (q *Queries) GetAllCategories(ctx context.Context) ([]Category, error) {
 	return items, nil
 }
 
+const getCategory = `-- name: GetCategory :one
+SELECT id, name FROM categories
+WHERE id = $1
+`
+
+func (q *Queries) GetCategory(ctx context.Context, id int32) (Category, error) {
+	row := q.db.QueryRowContext(ctx, getCategory, id)
+	var i Category
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
+}
+
 const getOrCreateCategory = `-- name: GetOrCreateCategory :one
 WITH existing_category AS (
     SELECT id FROM categories WHERE categories.name = $1

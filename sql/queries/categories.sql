@@ -7,6 +7,10 @@ TRUNCATE TABLE transactions, categories RESTART IDENTITY CASCADE;
 -- name: GetAllCategories :many
 SELECT * FROM categories;
 
+-- name: GetCategory :one
+SELECT * FROM categories
+WHERE id = $1;
+
 -- name: GetOrCreateCategory :one
 WITH existing_category AS (
     SELECT id FROM categories WHERE categories.name = $1

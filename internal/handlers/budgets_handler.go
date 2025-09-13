@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nfongster/ledger/internal/database"
@@ -132,8 +133,83 @@ func GetBudgetStatusHandler(state *s.State) func(c *gin.Context) {
 		budget_status, err := state.Database.GetBudgetStatus(c, int32(id))
 		if err != nil {
 			c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to get budget status for id %d", id))
-		} else {
-			c.IndentedJSON(http.StatusOK, budget_status)
+			return
 		}
+
+		category, err := state.Database.GetCategory(c, budget_status.CategoryID)
+		if err != nil {
+			c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to get category id %d", budget_status.CategoryID))
+			return
+		}
+
+		budget, err := state.Database.GetBudgetById(c, budget_status.BudgetID)
+		if err != nil {
+			c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to get budget for id %d", id))
+		} else {
+			c.IndentedJSON(http.StatusOK, struct {
+				Category        string
+				TimePeriod      database.Period
+				StartDate       time.Time
+				EndDate         time.Time
+				TargetAmount    float64
+				CurrentSpent    float64
+				RemainingAmount float64
+			}{
+				Category:        category.Name,
+				TimePeriod:      budget_status.TimePeriod,
+				StartDate:       budget.StartDate,
+				EndDate:         budget_status.EndDate,
+				TargetAmount:    budget_status.TargetAmount,
+				CurrentSpent:    budget_status.CurrentSpent,
+				RemainingAmount: budget_status.TargetAmount - budget_status.CurrentSpent,
+			})
+		}
+	}
+}
+
+func GetAllBudgetStatusHandler(state *s.State) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		all_statuses, err := state.Database.GetAllBudgetStatuses(c)
+		if err != nil {
+			c.String(http.StatusInternalServerError, "Failed to get all budget statuses!")
+			return
+		}
+
+		type BudgetStatus struct {
+			Category        string
+			TimePeriod      database.Period
+			StartDate       time.Time
+			EndDate         time.Time
+			TargetAmount    float64
+			CurrentSpent    float64
+			RemainingAmount float64
+		}
+
+		statusPayload := []BudgetStatus{}
+
+		for _, status := range all_statuses {
+			category, err := state.Database.GetCategory(c, status.CategoryID)
+			if err != nil {
+				c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to get category id %d", status.CategoryID))
+				return
+			}
+
+			budget, err := state.Database.GetBudgetById(c, status.BudgetID)
+			if err != nil {
+				c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to get budget id %d", status.BudgetID))
+				return
+			}
+			statusPayload = append(statusPayload, BudgetStatus{
+				Category:        category.Name,
+				TimePeriod:      status.TimePeriod,
+				StartDate:       budget.StartDate,
+				EndDate:         status.EndDate,
+				TargetAmount:    status.TargetAmount,
+				CurrentSpent:    status.CurrentSpent,
+				RemainingAmount: status.TargetAmount - status.CurrentSpent,
+			})
+		}
+
+		c.IndentedJSON(http.StatusOK, statusPayload)
 	}
 }

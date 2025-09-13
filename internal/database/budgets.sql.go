@@ -58,6 +58,96 @@ func (q *Queries) DeleteBudget(ctx context.Context, id int32) error {
 	return err
 }
 
+const getAllBudgetStatuses = `-- name: GetAllBudgetStatuses :many
+WITH budget_info AS (
+    SELECT 
+        id AS budget_id,
+        category_id, 
+        time_period,
+        target_amount,
+        start_date, 
+        CAST(start_date + 
+            CASE time_period
+                WHEN 'weekly' THEN INTERVAL '7 DAY'
+                WHEN 'monthly' THEN INTERVAL '1 MONTH'
+                WHEN 'bi-monthly' THEN INTERVAL '2 MONTHS'
+                WHEN 'quarterly' THEN INTERVAL '3 MONTHS'
+                WHEN 'yearly' THEN INTERVAL '1 YEAR'
+            END AS DATE) AS end_date 
+    FROM budgets
+),
+transactions_sum AS (
+    SELECT 
+        bi.budget_id,
+        bi.category_id,
+        bi.time_period,
+        bi.start_date,
+        bi.end_date,
+        bi.target_amount,
+        CAST(COALESCE(SUM(t.amount), 0) AS FLOAT) AS current_spent
+    FROM transactions t
+    JOIN budget_info bi ON t.category_id = bi.category_id
+    WHERE t.date BETWEEN bi.start_date AND bi.end_date
+    GROUP BY
+        bi.budget_id,
+        bi.category_id,
+        bi.time_period,
+        bi.start_date,
+        bi.end_date,
+        bi.target_amount
+)
+SELECT
+    budget_id,
+    category_id,
+    time_period,
+    start_date,
+    end_date,
+    target_amount,
+    current_spent
+FROM transactions_sum
+`
+
+type GetAllBudgetStatusesRow struct {
+	BudgetID     int32
+	CategoryID   int32
+	TimePeriod   Period
+	StartDate    time.Time
+	EndDate      time.Time
+	TargetAmount float64
+	CurrentSpent float64
+}
+
+func (q *Queries) GetAllBudgetStatuses(ctx context.Context) ([]GetAllBudgetStatusesRow, error) {
+	rows, err := q.db.QueryContext(ctx, getAllBudgetStatuses)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetAllBudgetStatusesRow
+	for rows.Next() {
+		var i GetAllBudgetStatusesRow
+		if err := rows.Scan(
+			&i.BudgetID,
+			&i.CategoryID,
+			&i.TimePeriod,
+			&i.StartDate,
+			&i.EndDate,
+			&i.TargetAmount,
+			&i.CurrentSpent,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getBudgetById = `-- name: GetBudgetById :one
 SELECT id, target_amount, time_period, start_date, notes, category_id FROM budgets
 WHERE id = $1
@@ -85,14 +175,14 @@ WITH budget_info AS (
         time_period,
         target_amount,
         start_date, 
-        start_date + 
+        CAST(start_date + 
             CASE time_period
                 WHEN 'weekly' THEN INTERVAL '7 DAY'
                 WHEN 'monthly' THEN INTERVAL '1 MONTH'
                 WHEN 'bi-monthly' THEN INTERVAL '2 MONTHS'
                 WHEN 'quarterly' THEN INTERVAL '3 MONTHS'
                 WHEN 'yearly' THEN INTERVAL '1 YEAR'
-            END AS end_date 
+            END AS DATE) AS end_date 
     FROM budgets
     WHERE budgets.id = $1
 ),
@@ -101,8 +191,10 @@ transactions_sum AS (
         bi.budget_id,
         bi.category_id,
         bi.time_period,
+        bi.start_date,
+        bi.end_date,
         bi.target_amount,
-        COALESCE(SUM(t.amount), 0) AS current_spent
+        CAST(COALESCE(SUM(t.amount), 0) AS FLOAT) AS current_spent
     FROM transactions t
     JOIN budget_info bi ON t.category_id = bi.category_id
     WHERE t.date BETWEEN bi.start_date AND bi.end_date
@@ -110,12 +202,16 @@ transactions_sum AS (
         bi.budget_id,
         bi.category_id,
         bi.time_period,
+        bi.start_date,
+        bi.end_date,
         bi.target_amount
 )
 SELECT
     budget_id,
     category_id,
     time_period,
+    start_date,
+    end_date,
     target_amount,
     current_spent
 FROM transactions_sum
@@ -125,8 +221,10 @@ type GetBudgetStatusRow struct {
 	BudgetID     int32
 	CategoryID   int32
 	TimePeriod   Period
+	StartDate    time.Time
+	EndDate      time.Time
 	TargetAmount float64
-	CurrentSpent interface{}
+	CurrentSpent float64
 }
 
 func (q *Queries) GetBudgetStatus(ctx context.Context, id int32) (GetBudgetStatusRow, error) {
@@ -136,6 +234,8 @@ func (q *Queries) GetBudgetStatus(ctx context.Context, id int32) (GetBudgetStatu
 		&i.BudgetID,
 		&i.CategoryID,
 		&i.TimePeriod,
+		&i.StartDate,
+		&i.EndDate,
 		&i.TargetAmount,
 		&i.CurrentSpent,
 	)

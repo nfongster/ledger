@@ -58,6 +58,9 @@ func main() {
 		jsGroup.GET("/transactions.js", func(c *gin.Context) {
 			c.File("web/js/transactions.js")
 		})
+		jsGroup.GET("/budgets.js", func(c *gin.Context) {
+			c.File("web/js/budgets.js")
+		})
 	}
 
 	// --- Setup API endpoints ---
@@ -75,6 +78,7 @@ func main() {
 		apiGroup.GET("/budgets", handlers.GetBudgetsHandler(state))
 		apiGroup.GET("/budgets/:id", handlers.GetBudgetByIdHandler(state))
 		apiGroup.GET("/budgets/:id/status", handlers.GetBudgetStatusHandler(state))
+		apiGroup.GET("/budgets/status", handlers.GetAllBudgetStatusHandler(state))
 		apiGroup.POST("/budgets", handlers.PostBudgetHandler(state))
 		apiGroup.PUT("/budgets/:id", handlers.PutBudgetHandler(state))
 		apiGroup.DELETE("/budgets/:id", handlers.DeleteBudgetHandler(state))
