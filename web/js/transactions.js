@@ -1,5 +1,6 @@
 const fetchButton = document.getElementById('fetch-transactions-btn');
 const transactionsTableBody = document.getElementById('transactions-table-body');
+const deleteButtonsContainer = document.getElementById('delete-buttons-container');
 
 fetchButton.addEventListener('click', () => {
     fetch('/api/transactions')
@@ -7,6 +8,7 @@ fetchButton.addEventListener('click', () => {
         .then(data => {
             console.log(data); 
             transactionsTableBody.innerHTML = '';
+            deleteButtonsContainer.innerHTML = '';
 
             data.forEach(transaction => {
                 const row = document.createElement('tr');
@@ -24,10 +26,20 @@ fetchButton.addEventListener('click', () => {
                 const categoryCell = document.createElement('td');
                 categoryCell.textContent = transaction.Category;
 
+                const deleteCell = document.createElement('td');
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'mb-3');
+                deleteButton.dataset.id = transaction.id;
+
+                deleteCell.appendChild(deleteButton);
+
                 row.appendChild(dateCell);
                 row.appendChild(descriptionCell);
                 row.appendChild(amountCell);
                 row.appendChild(categoryCell);
+                row.appendChild(deleteCell);
 
                 transactionsTableBody.appendChild(row);
             })
