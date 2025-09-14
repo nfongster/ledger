@@ -43,6 +43,20 @@ fetchButton.addEventListener('click', () => {
                     remainingCell.style.color = 'green'
                 }
 
+                const editCell = document.createElement('td');
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.classList.add('btn', 'btn-warning', 'btn-sm', 'mb-3');
+                editButton.dataset.id = budget.id;
+                editCell.appendChild(editButton);
+
+                const deleteCell = document.createElement('td');
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'mb-3');
+                deleteButton.dataset.id = budget.id;
+                deleteCell.appendChild(deleteButton);
+
                 row.appendChild(categoryCell);
                 row.appendChild(periodCell);
                 row.appendChild(startDateCell);
@@ -50,6 +64,8 @@ fetchButton.addEventListener('click', () => {
                 row.appendChild(budgetedAmountCell);
                 row.appendChild(currentSpendingCell);
                 row.appendChild(remainingCell);
+                row.appendChild(editCell);
+                row.appendChild(deleteCell);
 
                 budgetsTableBody.appendChild(row);
             })
