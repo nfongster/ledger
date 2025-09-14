@@ -1,7 +1,6 @@
-const fetchButton = document.getElementById('fetch-budgets-btn');
 const budgetsTableBody = document.getElementById('budgets-table-body');
 
-fetchButton.addEventListener('click', () => {
+document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/budgets/status')
         .then(response => response.json())
         .then(data => {

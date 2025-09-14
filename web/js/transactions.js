@@ -1,7 +1,6 @@
-const fetchButton = document.getElementById('fetch-transactions-btn');
 const transactionsTableBody = document.getElementById('transactions-table-body');
 
-fetchButton.addEventListener('click', () => {
+document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/transactions')
         .then(response => response.json())
         .then(data => {
