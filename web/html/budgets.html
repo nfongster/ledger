@@ -48,6 +48,30 @@
             <button type="submit" class="btn btn-primary" id="add-transaction-btn">Add</button>
         </form>
         </div>
+
+        <div class="p-3 my-4">
+        <form>
+            <h3>Filter By...</h3>
+            <div class="row">
+                <div class="col mb-3">
+                <label for="budget-category-filter" class="form-label">Category</label>
+                <input type="text" class="form-control" id="budget-category-filter">
+            </div>
+
+            <div class="col mb-3">
+                <label for="budget-period-filter" class="form-label">Period</label>
+                <input type="text" class="form-control" id="budget-period-filter">
+            </div>
+
+            <div class="col mb-3">
+                <label for="budget-start-date-filter" class="form-label">Start Date</label>
+                <input type="date" class="form-control" id="budget-start-date-filter">
+            </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" id="filter-budgets-btn">Filter</button>
+        </form>
+        </div>
         
         <div class="p-3 my-4 rounded text-white">
             <table class="table table-secondary table-bordered">

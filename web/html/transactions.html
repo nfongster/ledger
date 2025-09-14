@@ -42,6 +42,30 @@
         </form>
         </div>
 
+        <div class="p-3 my-4">
+        <form>
+            <h3>Filter By...</h3>
+            <div class="row">
+            <div class="col mb-3">
+                <label for="transaction-date-filter" class="form-label">Date</label>
+                <input type="date" class="form-control" id="transaction-date-filter">
+            </div>
+
+            <div class="col mb-3">
+                <label for="transaction-description-filter" class="form-label">Description</label>
+                <input type="text" class="form-control" id="transaction-description-filter">
+            </div>
+
+            <div class="col mb-3">
+                <label for="transaction-category-filter" class="form-label">Category</label>
+                <input type="text" class="form-control" id="transaction-category-filter">
+            </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" id="filter-transactions-btn">Filter</button>
+        </form>
+        </div>
+
         <div class="col-10 p-3 my-4 rounded text-white">
             <table class="table table-secondary table-bordered">
                 <thead>
