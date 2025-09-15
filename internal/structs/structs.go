@@ -42,5 +42,5 @@ type BudgetClientParams struct {
 	TimePeriod   string    `json:"time_period"`
 	StartDate    time.Time `json:"start_date"`
 	Notes        string    `json:"notes"`
-	CategoryId   int       `json:"category_id"`
+	Category     string    `json:"category"`
 }

@@ -56,7 +56,7 @@ func PostBudgetHandler(state *s.State) func(c *gin.Context) {
 				String: budgetClient.Notes,
 				Valid:  budgetClient.Notes != "",
 			},
-			CategoryID: int32(budgetClient.CategoryId),
+			Name: budgetClient.Category,
 		})
 
 		if err != nil {
@@ -92,7 +92,7 @@ func PutBudgetHandler(state *s.State) func(c *gin.Context) {
 				String: budgetClient.Notes,
 				Valid:  budgetClient.Notes != "",
 			},
-			CategoryID: int32(budgetClient.CategoryId),
+			Name: budgetClient.Category,
 		})
 
 		if err != nil {

@@ -149,7 +149,7 @@ func SeedDatabase(q *database.Queries) {
 		TargetAmount: 50.00,
 		TimePeriod:   database.PeriodWeekly,
 		StartDate:    time.Date(2025, time.October, 13, 0, 0, 0, 0, time.UTC),
-		CategoryID:   groceries_id,
+		Name:         "Groceries",
 	})
 	if err != nil {
 		log.Fatal(err)

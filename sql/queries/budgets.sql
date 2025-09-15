@@ -9,14 +9,15 @@ WHERE id = $1;
 INSERT INTO budgets (
     target_amount, time_period, start_date, notes, category_id
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4,
+    (SELECT id FROM categories WHERE name = $5)
 )
 RETURNING *;
 
 -- name: UpdateBudget :one
 UPDATE budgets
-SET target_amount = $2, time_period = $3, start_date = $4, notes = $5, category_id = $6
-WHERE id = $1
+SET target_amount = $2, time_period = $3, start_date = $4, notes = $5, category_id = (SELECT id FROM categories WHERE name = $6)
+WHERE budgets.id = $1
 RETURNING *;
 
 -- name: DeleteBudget :exec
