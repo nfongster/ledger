@@ -1,16 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     fetch('/api/budgets/status')
     .then(response => response.json())
-    .then(data => {
-        populateBudgetsGrid(data)
-    })
+    .then(data => populateBudgetsGrid(data))
     .catch(error => console.error('There was a problem with the fetch operation:', error));
 });
 
 const addBudgetButton = document.getElementById('add-budget-btn')
 
 addBudgetButton.addEventListener('click', () => {
-    fetch('api/budgets', {
+    fetch('/api/budgets', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -28,9 +26,7 @@ addBudgetButton.addEventListener('click', () => {
         return fetch('/api/budgets');
     })
     .then(response => response.json())
-    .then(data => {
-        populateBudgetsGrid(data);
-    })
+    .then(data => populateBudgetsGrid(data))
     .catch(error => console.error('There was a problem with the fetch operation:', error));
 });
 
@@ -78,15 +74,15 @@ function populateBudgetsGrid(budgetJsonArray) {
         const editCell = document.createElement('td');
         const editButton = document.createElement('button');
         editButton.textContent = 'Edit';
-        editButton.classList.add('btn', 'btn-warning', 'btn-sm', 'mb-3');
-        editButton.dataset.id = budget.id;
+        editButton.classList.add('btn', 'btn-warning', 'btn-sm', 'mb-3', 'budget-edit-btn');
+        editButton.dataset.id = budget.ID;
         editCell.appendChild(editButton);
 
         const deleteCell = document.createElement('td');
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
-        deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'mb-3');
-        deleteButton.dataset.id = budget.id;
+        deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'mb-3', 'budget-delete-btn');
+        deleteButton.dataset.id = budget.ID;
         deleteCell.appendChild(deleteButton);
 
         row.appendChild(categoryCell);
@@ -102,6 +98,29 @@ function populateBudgetsGrid(budgetJsonArray) {
         budgetsTableBody.appendChild(row);
     })
 }
+
+budgetsTableBody.addEventListener('click', (event) => {
+    if (event.target.classList.contains('budget-delete-btn')) {
+        const budgetId = event.target.dataset.id;
+        console.log("Clicked Delete for ID ", budgetId)
+        
+        fetch(`/api/budgets/${budgetId}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to delete the budget.');
+            }
+            console.log("Budget successfully deleted.");
+            return fetch('/api/budgets');
+        })
+        .then(response => response.json())
+        .then(data => populateBudgetsGrid(data))
+        .catch(error => {
+            console.error('There was a problem with the delete operation:', error);
+        });
+    }
+})
 
 function createBudgetJSON() {
     const amountField = document.getElementById('budget-amount');

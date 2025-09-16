@@ -176,6 +176,7 @@ func GetAllBudgetStatusHandler(state *s.State) func(c *gin.Context) {
 		}
 
 		type BudgetStatus struct {
+			ID              int32
 			Category        string
 			TimePeriod      database.Period
 			StartDate       time.Time
@@ -200,6 +201,7 @@ func GetAllBudgetStatusHandler(state *s.State) func(c *gin.Context) {
 				return
 			}
 			statusPayload = append(statusPayload, BudgetStatus{
+				ID:              status.BudgetID,
 				Category:        category.Name,
 				TimePeriod:      status.TimePeriod,
 				StartDate:       budget.StartDate,

@@ -28,9 +28,7 @@ addTransactionButton.addEventListener('click', () => {
         return fetch('/api/transactions');
     })
     .then(response => response.json())
-    .then(data => {
-        populateTransactionsGrid(data);
-    })
+    .then(data => populateTransactionsGrid(data))
     .catch(error => console.error('There was a problem with the fetch operation:', error));
 });
 
@@ -59,15 +57,15 @@ function populateTransactionsGrid(transactionJsonArray) {
         const editCell = document.createElement('td');
         const editButton = document.createElement('button');
         editButton.textContent = 'Edit';
-        editButton.classList.add('btn', 'btn-warning', 'btn-sm', 'mb-3');
-        editButton.dataset.id = transaction.id;
+        editButton.classList.add('btn', 'btn-warning', 'btn-sm', 'mb-3', 'transaction-edit-btn');
+        editButton.dataset.id = transaction.ID;
         editCell.appendChild(editButton);
 
         const deleteCell = document.createElement('td');
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
-        deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'mb-3');
-        deleteButton.dataset.id = transaction.id;
+        deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'mb-3', 'transaction-delete-btn');
+        deleteButton.dataset.id = transaction.ID;
         deleteCell.appendChild(deleteButton);
 
         row.appendChild(dateCell);
@@ -80,6 +78,29 @@ function populateTransactionsGrid(transactionJsonArray) {
         transactionsTableBody.appendChild(row);
     })
 }
+
+transactionsTableBody.addEventListener('click', (event) => {
+    if (event.target.classList.contains('transaction-delete-btn')) {
+        const transactionId = event.target.dataset.id;
+        console.log("Clicked Delete for ID ", transactionId)
+        
+        fetch(`/api/transactions/${transactionId}`, {
+            method: 'DELETE'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to delete the transaction.');
+            }
+            console.log("Transaction successfully deleted.");
+            return fetch('/api/transactions');
+        })
+        .then(response => response.json())
+        .then(data => populateTransactionsGrid(data))
+        .catch(error => {
+            console.error('There was a problem with the delete operation:', error);
+        });
+    }
+})
 
 function createTransactionJSON() {
     const dateField = document.getElementById('transaction-date');
