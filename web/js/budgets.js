@@ -47,11 +47,11 @@ function populateBudgetsGrid(budgetJsonArray) {
 
         const startDateCell = document.createElement('td');
         const startDateObject = new Date(budget.StartDate);
-        startDateCell.textContent = startDateObject.toISOString().slice(1, 10);
+        startDateCell.textContent = startDateObject.toISOString().slice(0, 10);
 
         const endDateCell = document.createElement('td');
         const endDateObject = new Date(budget.EndDate);
-        endDateCell.textContent = endDateObject.toISOString().slice(1, 10);
+        endDateCell.textContent = endDateObject.toISOString().slice(0, 10);
 
         const budgetedAmountCell = document.createElement('td');
         budgetedAmountCell.textContent = `$${budget.TargetAmount.toFixed(2)}`;
