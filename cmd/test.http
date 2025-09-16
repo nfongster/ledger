@@ -82,6 +82,10 @@ GET http://localhost:8080/api/budgets/1
 
 ###
 
+GET http://localhost:8080/api/budgets/status
+
+###
+
 POST http://localhost:8080/api/budgets
 content-type: application/json
 
@@ -89,7 +93,7 @@ content-type: application/json
     "target_amount": 50.00,
     "time_period": "weekly",
     "start_date": "2025-12-01T00:00:00Z",
-    "category_id": 2
+    "category": "Groceries"
 }
 
 ###

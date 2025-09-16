@@ -112,7 +112,7 @@ budgetsTableBody.addEventListener('click', (event) => {
                 throw new Error('Failed to delete the budget.');
             }
             console.log("Budget successfully deleted.");
-            return fetch('/api/budgets');
+            return fetch('/api/budgets/status');
         })
         .then(response => response.json())
         .then(data => populateBudgetsGrid(data))

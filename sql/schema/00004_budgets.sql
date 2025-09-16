@@ -11,7 +11,7 @@ CREATE TABLE budgets(
     start_date DATE NOT NULL,
     notes TEXT,
 
-    category_id INT NOT NULL UNIQUE,
+    category_id INT NOT NULL,
     CONSTRAINT fk_category_id
     FOREIGN KEY (category_id)
     REFERENCES categories (id)

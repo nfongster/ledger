@@ -60,61 +60,48 @@ func (q *Queries) DeleteBudget(ctx context.Context, id int32) error {
 }
 
 const getAllBudgetStatuses = `-- name: GetAllBudgetStatuses :many
-WITH budget_info AS (
-    SELECT 
-        id AS budget_id,
-        category_id, 
-        time_period,
-        target_amount,
-        start_date, 
-        CAST(start_date + 
-            CASE time_period
-                WHEN 'weekly' THEN INTERVAL '7 DAY'
-                WHEN 'monthly' THEN INTERVAL '1 MONTH'
-                WHEN 'bi-monthly' THEN INTERVAL '2 MONTHS'
-                WHEN 'quarterly' THEN INTERVAL '3 MONTHS'
-                WHEN 'yearly' THEN INTERVAL '1 YEAR'
-            END AS DATE) AS end_date 
-    FROM budgets
-),
-transactions_sum AS (
-    SELECT 
-        bi.budget_id,
-        bi.category_id,
-        bi.time_period,
-        bi.start_date,
-        bi.end_date,
-        bi.target_amount,
-        CAST(COALESCE(SUM(t.amount), 0) AS FLOAT) AS current_spent
-    FROM transactions t
-    JOIN budget_info bi ON t.category_id = bi.category_id
-    WHERE t.date BETWEEN bi.start_date AND bi.end_date
-    GROUP BY
-        bi.budget_id,
-        bi.category_id,
-        bi.time_period,
-        bi.start_date,
-        bi.end_date,
-        bi.target_amount
-)
 SELECT
-    budget_id,
-    category_id,
-    time_period,
-    start_date,
-    end_date,
-    target_amount,
-    current_spent
-FROM transactions_sum
+    b.id AS budget_id,
+    b.category_id,
+    b.time_period,
+    b.target_amount,
+    b.start_date,
+    CAST(b.start_date + 
+        CASE b.time_period
+            WHEN 'weekly' THEN INTERVAL '7 DAY'
+            WHEN 'monthly' THEN INTERVAL '1 MONTH'
+            WHEN 'bi-monthly' THEN INTERVAL '2 MONTHS'
+            WHEN 'quarterly' THEN INTERVAL '3 MONTHS'
+            WHEN 'yearly' THEN INTERVAL '1 YEAR'
+        END AS DATE) AS end_date,
+    CAST(COALESCE(SUM(t.amount), 0) AS FLOAT) AS current_spent
+FROM budgets b
+LEFT JOIN transactions t 
+    ON t.category_id = b.category_id 
+    AND t.date BETWEEN b.start_date AND 
+    CAST(b.start_date + 
+        CASE b.time_period
+            WHEN 'weekly' THEN INTERVAL '7 DAY'
+            WHEN 'monthly' THEN INTERVAL '1 MONTH'
+            WHEN 'bi-monthly' THEN INTERVAL '2 MONTHS'
+            WHEN 'quarterly' THEN INTERVAL '3 MONTHS'
+            WHEN 'yearly' THEN INTERVAL '1 YEAR'
+        END AS DATE)
+GROUP BY
+    b.id,
+    b.category_id,
+    b.time_period,
+    b.target_amount,
+    b.start_date
 `
 
 type GetAllBudgetStatusesRow struct {
 	BudgetID     int32
 	CategoryID   int32
 	TimePeriod   Period
+	TargetAmount float64
 	StartDate    time.Time
 	EndDate      time.Time
-	TargetAmount float64
 	CurrentSpent float64
 }
 
@@ -131,9 +118,9 @@ func (q *Queries) GetAllBudgetStatuses(ctx context.Context) ([]GetAllBudgetStatu
 			&i.BudgetID,
 			&i.CategoryID,
 			&i.TimePeriod,
+			&i.TargetAmount,
 			&i.StartDate,
 			&i.EndDate,
-			&i.TargetAmount,
 			&i.CurrentSpent,
 		); err != nil {
 			return nil, err
