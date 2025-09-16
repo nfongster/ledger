@@ -41,20 +41,25 @@ function populateBudgetsGrid(budgetJsonArray) {
 
         const categoryCell = document.createElement('td');
         categoryCell.textContent = budget.Category;
+        categoryCell.classList.add('budget-category');
 
         const periodCell = document.createElement('td');
         periodCell.textContent = budget.TimePeriod;
+        periodCell.classList.add('budget-period');
 
         const startDateCell = document.createElement('td');
         const startDateObject = new Date(budget.StartDate);
         startDateCell.textContent = startDateObject.toISOString().slice(0, 10);
+        startDateCell.classList.add('budget-start-date');
 
         const endDateCell = document.createElement('td');
         const endDateObject = new Date(budget.EndDate);
         endDateCell.textContent = endDateObject.toISOString().slice(0, 10);
+        endDateCell.classList.add('budget-end-date');
 
         const budgetedAmountCell = document.createElement('td');
         budgetedAmountCell.textContent = `$${budget.TargetAmount.toFixed(2)}`;
+        budgetedAmountCell.classList.add('budget-target-amount');
 
         const currentSpendingCell = document.createElement('td');
         currentSpendingCell.textContent = `$${budget.CurrentSpent.toFixed(2)}`;
@@ -100,27 +105,68 @@ function populateBudgetsGrid(budgetJsonArray) {
 }
 
 budgetsTableBody.addEventListener('click', (event) => {
-    if (event.target.classList.contains('budget-delete-btn')) {
-        const budgetId = event.target.dataset.id;
-        console.log("Clicked Delete for ID ", budgetId)
-        
-        fetch(`/api/budgets/${budgetId}`, {
-            method: 'DELETE'
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to delete the budget.');
-            }
-            console.log("Budget successfully deleted.");
-            return fetch('/api/budgets/status');
-        })
-        .then(response => response.json())
-        .then(data => populateBudgetsGrid(data))
-        .catch(error => {
-            console.error('There was a problem with the delete operation:', error);
-        });
+    if (!event.target.classList.contains('budget-delete-btn')) {
+        return;
     }
+    const budgetId = event.target.dataset.id;
+    console.log("Clicked Delete for ID ", budgetId)
+    
+    fetch(`/api/budgets/${budgetId}`, {
+        method: 'DELETE'
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to delete the budget.');
+        }
+        console.log("Budget successfully deleted.");
+        return fetch('/api/budgets/status');
+    })
+    .then(response => response.json())
+    .then(data => populateBudgetsGrid(data))
+    .catch(error => {
+        console.error('There was a problem with the delete operation:', error);
+    });
 })
+
+budgetsTableBody.addEventListener('click', (event) => {
+    if (!event.target.classList.contains('budget-edit-btn')) {
+        return;
+    }
+
+    // Get the row that was clicked
+    const row = event.target.closest('tr');
+
+    // Get the data from the row
+    const budgetId = event.target.dataset.id;
+    const category = row.querySelector('.budget-category').textContent;
+    const period = row.querySelector('.budget-period').textContent;
+    const startDate = row.querySelector('.budget-start-date').textContent;
+    const endDate = row.querySelector('.budget-end-date').textContent;
+    const amount = row.querySelector('.budget-target-amount').textContent.substring(1); // Remove the '$'
+    
+
+    // Get references to the modal's form fields
+    const editId = document.getElementById('edit-budget-id');
+    const editCategory = document.getElementById('edit-budget-category');
+    const editPeriod = document.getElementById('edit-budget-period');
+    const editStartDate = document.getElementById('edit-budget-start-date');
+    const editEndDate = document.getElementById('edit-budget-end-date');
+    const editAmount = document.getElementById('edit-budget-amount');
+    
+
+    // Populate the form fields with the data
+    editId.value = budgetId;
+    editCategory.value = category;
+    editPeriod.value = period;
+    editStartDate.value = startDate;
+    editEndDate.value = endDate;
+    editAmount.value = parseFloat(amount);
+
+    // Show the modal dialog
+    const editModalElement = document.getElementById('editBudgetModal');
+    const editModal = new bootstrap.Modal(editModalElement);
+    editModal.show();
+});
 
 function createBudgetJSON() {
     const amountField = document.getElementById('budget-amount');
