@@ -141,7 +141,6 @@ budgetsTableBody.addEventListener('click', (event) => {
     const category = row.querySelector('.budget-category').textContent;
     const period = row.querySelector('.budget-period').textContent;
     const startDate = row.querySelector('.budget-start-date').textContent;
-    const endDate = row.querySelector('.budget-end-date').textContent;
     const amount = row.querySelector('.budget-target-amount').textContent.substring(1); // Remove the '$'
     
 
@@ -150,7 +149,6 @@ budgetsTableBody.addEventListener('click', (event) => {
     const editCategory = document.getElementById('edit-budget-category');
     const editPeriod = document.getElementById('edit-budget-period');
     const editStartDate = document.getElementById('edit-budget-start-date');
-    const editEndDate = document.getElementById('edit-budget-end-date');
     const editAmount = document.getElementById('edit-budget-amount');
     
 
@@ -159,7 +157,6 @@ budgetsTableBody.addEventListener('click', (event) => {
     editCategory.value = category;
     editPeriod.value = period;
     editStartDate.value = startDate;
-    editEndDate.value = endDate;
     editAmount.value = parseFloat(amount);
 
     // Show the modal dialog
@@ -168,11 +165,54 @@ budgetsTableBody.addEventListener('click', (event) => {
     editModal.show();
 });
 
+const saveBudgetButton = document.getElementById('save-budget-btn');
+
+saveBudgetButton.addEventListener('click', (event) => {
+    const budgetIdField = document.getElementById('edit-budget-id');
+    const budgetid = budgetIdField.value;
+    
+    console.log("Clicked Save for ID ", budgetid)
+    
+    fetch(`/api/budgets/${budgetid}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(createBudgetJSONFromForm())
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to update the budget.');
+        }
+        console.log("Budget successfully updated.");
+        return fetch('/api/budgets');
+    })
+    .then(response => response.json())
+    .then(data => populateBudgetsGrid(data))
+    .catch(error => {
+        console.error('There was a problem with the update operation:', error);
+    });
+})
+
 function createBudgetJSON() {
     const amountField = document.getElementById('budget-amount');
     const timePeriodField = document.getElementById('budget-period');
     const startDateField = document.getElementById('budget-start-date');
     const categoryField = document.getElementById('budget-category');
+    
+    return {
+        target_amount: parseFloat(amountField.value),
+        time_period: timePeriodField.value,
+        start_date: startDateField.value + 'T00:00:00Z',
+        category: categoryField.value
+    };
+}
+
+function createBudgetJSONFromForm() {
+    const amountField = document.getElementById('edit-budget-amount');
+    const timePeriodField = document.getElementById('edit-budget-period');
+    const startDateField = document.getElementById('edit-budget-start-date');
+    const categoryField = document.getElementById('edit-budget-category');
     
     return {
         target_amount: parseFloat(amountField.value),

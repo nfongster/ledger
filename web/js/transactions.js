@@ -142,11 +142,54 @@ transactionsTableBody.addEventListener('click', (event) => {
     editModal.show();
 });
 
+const saveTransactionButton = document.getElementById('save-transaction-btn');
+
+saveTransactionButton.addEventListener('click', (event) => {
+    const transactionIdField = document.getElementById('edit-transaction-id');
+    const transactionId = transactionIdField.value;
+
+    console.log("Clicked Save for ID ", transactionId)
+    
+    fetch(`/api/transactions/${transactionId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(createTransactionJSONFromForm())
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to update the transaction.');
+        }
+        console.log("Transaction successfully updated.");
+        return fetch('/api/transactions');
+    })
+    .then(response => response.json())
+    .then(data => populateTransactionsGrid(data))
+    .catch(error => {
+        console.error('There was a problem with the update operation:', error);
+    });
+})
+
 function createTransactionJSON() {
     const dateField = document.getElementById('transaction-date');
     const descriptionField = document.getElementById('transaction-description');
     const amountField = document.getElementById('transaction-amount');
     const categoryField = document.getElementById('transaction-category');
+
+    return {
+        date: dateField.value + 'T00:00:00Z',
+        description: descriptionField.value,
+        amount: parseFloat(amountField.value),
+        category: categoryField.value
+    };
+}
+
+function createTransactionJSONFromForm() {
+    const dateField = document.getElementById('edit-transaction-date');
+    const descriptionField = document.getElementById('edit-transaction-description');
+    const amountField = document.getElementById('edit-transaction-amount');
+    const categoryField = document.getElementById('edit-transaction-category');
 
     return {
         date: dateField.value + 'T00:00:00Z',
