@@ -48,4 +48,6 @@ jobs:
         run: cat config.json
 
       - name: Integration tests
+        env:
+          DATABASE_URL: postgres://runner:@localhost:5432/test_db?sslmode=disable
         run: go test ./...
