@@ -11,7 +11,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:13
+        image: postgres
         env:
           POSTGRES_USER: runner
           POSTGRES_PASSWORD: ''
@@ -37,9 +37,12 @@ jobs:
       - name: Install dependencies
         run: go mod tidy
 
-      - name: Create config file
+      - name: Configure environment
         run: |
           echo "{\"DbConnectionString\": \"postgres://runner:@localhost:5432/ledger\"}" > config.json
+        env:
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: 5432
       
       - name: Check file content
         run: cat config.json
