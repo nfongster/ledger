@@ -20,3 +20,6 @@ jobs:
 
       - name: Version check
         run: go version
+
+      - name: Integration tests
+        run: go test ./...
