@@ -47,11 +47,6 @@ jobs:
       - name: Check file content
         run: cat config.json
 
-      - name: Wait for PostgreSQL
-        run: |
-            echo "Waiting for PostgreSQL..."
-            timeout 60s bash -c 'until echo "QUIT" | nc 127.0.0.1 5432; do sleep 1; done'
-
       - name: Integration tests
         env:
           DATABASE_URL: postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
