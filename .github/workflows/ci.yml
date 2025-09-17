@@ -49,6 +49,12 @@ jobs:
       - name: Check file content
         run: cat config.json
 
+      - name: Run database migrations
+        run: |
+          goose -dir sql/schema postgres "postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable" up
+        env:
+          DATABASE_URL: postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
+
       - name: Integration tests
         env:
           DATABASE_URL: postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
