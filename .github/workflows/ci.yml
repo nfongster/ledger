@@ -21,5 +21,12 @@ jobs:
       - name: Version check
         run: go version
 
+      - name: Create JSON file
+        run: |
+          echo "{\"DbConnectionString\": \"postgres://runner:@localhost:5432/ledger\"}" > config.json
+      
+      - name: Check file content
+        run: cat config.json
+
       - name: Integration tests
         run: go test ./...
