@@ -49,5 +49,5 @@ jobs:
 
       - name: Integration tests
         env:
-          DATABASE_URL: postgres://runner:@127.0.0.1:5432/test_db?sslmode=disable
+          DATABASE_URL: postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
         run: go test ./...
