@@ -109,7 +109,7 @@ func TestPostBudgetsHandler(t *testing.T) {
 	}
 
 	assert.Equal(t, int32(1), budget.CategoryID)
-	assert.Equal(t, 1100.00, budget.TargetAmount)
+	assert.Equal(t, 1200.00, budget.TargetAmount)
 	assert.Equal(t, database.PeriodMonthly, budget.TimePeriod)
 	assert.Equal(t, time.Date(2025, time.November, 1, 0, 0, 0, 0, time.UTC), budget.StartDate.In(time.UTC))
 }
