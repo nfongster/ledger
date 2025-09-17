@@ -1,71 +1,74 @@
 package handlers
 
 import (
+	"database/sql"
+	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/DATA-DOG/go-sqlmock"
-	_ "github.com/DATA-DOG/go-sqlmock"
 	"github.com/gin-gonic/gin"
 	"github.com/nfongster/ledger/internal/database"
-	s "github.com/nfongster/ledger/internal/structs"
+	util "github.com/nfongster/ledger/internal/util"
 	"github.com/stretchr/testify/assert"
+
+	_ "github.com/lib/pq"
 )
 
-func TestGetTransactionsHandler(t *testing.T) {
-	gin.SetMode(gin.TestMode)
-	router := gin.Default()
+func setupTestDB() *sql.DB {
+	cfg, err := util.LoadConfig("../../config.json")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	db, mock, err := sqlmock.New()
-	assert.NoError(t, err)
-	defer db.Close()
-
-	queries := database.New(db)
-	state := &s.State{Database: queries}
-
-	router.GET("/api/transactions", GetTransactionsHandler(state))
-
-	t.Run("Get all transactions", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"id", "date", "description", "amount", "notes", "category"}).
-			AddRow(1, time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC), "Transaction 1", 50.00, "Notes 1", "Groceries").
-			AddRow(2, time.Date(2025, 1, 2, 0, 0, 0, 0, time.UTC), "Transaction 2", 25.50, "Notes 2", "Utilities")
-		const sqlQuery = `SELECT t.id, t.date, t.description, t.amount, t.notes, c.name AS category
-FROM transactions AS t
-JOIN categories AS c ON t.category_id = c.id
-`
-		mock.ExpectQuery(sqlQuery).WillReturnRows(rows)
-
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", "/api/transactions", nil)
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-		assert.Contains(t, w.Body.String(), `"Description": "Transaction 1"`)
-		assert.NoError(t, mock.ExpectationsWereMet())
-	})
-
-	t.Run("Get transactions by category", func(t *testing.T) {
-		rows := sqlmock.NewRows([]string{"id", "date", "description", "amount", "notes", "category"}).
-			AddRow(1, time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC), "Transaction 1", 50.00, "Notes 1", "Groceries")
-		mock.ExpectQuery("SELECT t.id, t.date, t.description, t.amount, t.notes, c.name AS category FROM transactions AS t JOIN categories AS c ON t.category_id = c.id WHERE c.name = \\$1").WithArgs("Groceries").WillReturnRows(rows)
-
-		w := httptest.NewRecorder()
-		req, _ := http.NewRequest("GET", "/api/transactions?category=Groceries", nil)
-		router.ServeHTTP(w, req)
-
-		assert.Equal(t, http.StatusOK, w.Code)
-		assert.Contains(t, w.Body.String(), `"Category": "Groceries"`)
-		assert.NotContains(t, w.Body.String(), `"Category": "Utilities"`)
-		assert.NoError(t, mock.ExpectationsWereMet())
-	})
+	db, err := sql.Open("postgres", cfg.DbConnectionString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return db
 }
 
-// TODO (transactions):
-// POST /api/transactions
-// DELETE /api/transactions/:id
-// PUT /api/transactions/:id
+func TestGetTransactionsHandler(t *testing.T) {
+	db := setupTestDB()
+	defer db.Close()
+	q := database.New(db)
+	state := &util.State{Database: q}
+
+	util.ResetDatabase(q)
+	util.AddTransaction(q, "Coffee", "Groceries", time.Date(2025, time.October, 16, 0, 0, 0, 0, time.UTC), 9.99)
+
+	router := gin.Default()
+	router.GET("/api/transactions", GetTransactionsHandler(state))
+
+	// Start a test server
+	testServer := httptest.NewServer(router)
+	defer testServer.Close()
+
+	// Make an HTTP request
+	resp, err := http.Get(testServer.URL + "/api/transactions")
+	if err != nil {
+		t.Fatalf("Failed to make request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Assert the response
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Expected HTTP status code to be 200")
+
+	var transactions []database.GetAllTransactionsRow
+	err = json.NewDecoder(resp.Body).Decode(&transactions)
+	if err != nil {
+		t.Fatalf("Failed to decode response body: %v", err)
+	}
+
+	// Assert the data returned from the database
+	assert.Len(t, transactions, 1, "Expected one transaction to be returned")
+	assert.Equal(t, "Coffee", transactions[0].Description)
+	assert.Equal(t, "Groceries", transactions[0].Category)
+	assert.Equal(t, time.Date(2025, time.October, 16, 0, 0, 0, 0, time.UTC), transactions[0].Date)
+	assert.Equal(t, 9.99, transactions[0].Amount)
+}
 
 // TODO (budgets):
 // GET /api/budgets/status

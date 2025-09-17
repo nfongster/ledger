@@ -9,10 +9,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nfongster/ledger/internal/database"
-	s "github.com/nfongster/ledger/internal/structs"
+	util "github.com/nfongster/ledger/internal/util"
 )
 
-func GetBudgetsHandler(state *s.State) func(c *gin.Context) {
+func GetBudgetsHandler(state *util.State) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		budgets, err := state.Database.GetBudgets(c)
 		if err != nil {
@@ -23,7 +23,7 @@ func GetBudgetsHandler(state *s.State) func(c *gin.Context) {
 	}
 }
 
-func GetBudgetByIdHandler(state *s.State) func(c *gin.Context) {
+func GetBudgetByIdHandler(state *util.State) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		idstr := c.Param("id")
 		id, err := strconv.Atoi(idstr)
@@ -40,9 +40,9 @@ func GetBudgetByIdHandler(state *s.State) func(c *gin.Context) {
 	}
 }
 
-func PostBudgetHandler(state *s.State) func(c *gin.Context) {
+func PostBudgetHandler(state *util.State) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		var budgetClient s.BudgetClientParams
+		var budgetClient util.BudgetClientParams
 		if err := c.BindJSON(&budgetClient); err != nil {
 			c.String(http.StatusBadRequest, "Failed to parse your JSON!")
 			return
@@ -68,7 +68,7 @@ func PostBudgetHandler(state *s.State) func(c *gin.Context) {
 	}
 }
 
-func PutBudgetHandler(state *s.State) func(c *gin.Context) {
+func PutBudgetHandler(state *util.State) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		idstr := c.Param("id")
 		id, err := strconv.Atoi(idstr)
@@ -77,7 +77,7 @@ func PutBudgetHandler(state *s.State) func(c *gin.Context) {
 			return
 		}
 
-		var budgetClient s.BudgetClientParams
+		var budgetClient util.BudgetClientParams
 		if err := c.BindJSON(&budgetClient); err != nil {
 			c.String(http.StatusBadRequest, "Failed to parse your JSON!")
 			return
@@ -104,7 +104,7 @@ func PutBudgetHandler(state *s.State) func(c *gin.Context) {
 	}
 }
 
-func DeleteBudgetHandler(state *s.State) func(c *gin.Context) {
+func DeleteBudgetHandler(state *util.State) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		idstr := c.Param("id")
 		id, err := strconv.Atoi(idstr)
@@ -121,7 +121,7 @@ func DeleteBudgetHandler(state *s.State) func(c *gin.Context) {
 	}
 }
 
-func GetBudgetStatusHandler(state *s.State) func(c *gin.Context) {
+func GetBudgetStatusHandler(state *util.State) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		idstr := c.Param("id")
 		id, err := strconv.Atoi(idstr)
@@ -167,7 +167,7 @@ func GetBudgetStatusHandler(state *s.State) func(c *gin.Context) {
 	}
 }
 
-func GetAllBudgetStatusHandler(state *s.State) func(c *gin.Context) {
+func GetAllBudgetStatusHandler(state *util.State) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		all_statuses, err := state.Database.GetAllBudgetStatuses(c)
 		if err != nil {

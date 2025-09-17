@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/nfongster/ledger/internal/database"
-	s "github.com/nfongster/ledger/internal/structs"
+	s "github.com/nfongster/ledger/internal/util"
 )
 
 func GetTransactionsHandler(state *s.State) func(c *gin.Context) {

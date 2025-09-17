@@ -1,8 +1,6 @@
-package data
+package util
 
 import (
-	"encoding/json"
-	"os"
 	"time"
 
 	"github.com/nfongster/ledger/internal/database"
@@ -14,19 +12,6 @@ type State struct {
 
 type Config struct {
 	DbConnectionString string
-}
-
-func LoadConfig() (*Config, error) {
-	file, err := os.Open("config.json")
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	decoder := json.NewDecoder(file)
-	var config Config
-	decoder.Decode(&config)
-	return &config, err
 }
 
 type TransactionClientParams struct {
