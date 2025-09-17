@@ -41,7 +41,7 @@ jobs:
 
       - name: Configure environment
         run: |
-          echo "{\"DbConnectionString\": \"postgres://runner:postgres@127.0.0.1:5432/ledger\"}" > config.json
+          echo "{\"DbConnectionString\": \"postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable\"}" > config.json
         env:
           POSTGRES_HOST: postgres
           POSTGRES_PORT: 5432
