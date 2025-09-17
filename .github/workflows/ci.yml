@@ -9,6 +9,19 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_USER: runner
+          POSTGRES_PASSWORD: ''
+          POSTGRES_DB: ledger
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -21,7 +34,10 @@ jobs:
       - name: Version check
         run: go version
 
-      - name: Create JSON file
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Create config file
         run: |
           echo "{\"DbConnectionString\": \"postgres://runner:@localhost:5432/ledger\"}" > config.json
       
