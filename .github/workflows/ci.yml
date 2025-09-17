@@ -39,7 +39,7 @@ jobs:
 
       - name: Configure environment
         run: |
-          echo "{\"DbConnectionString\": \"postgres://runner:postgres@localhost:5432/ledger\"}" > config.json
+          echo "{\"DbConnectionString\": \"postgres://runner:postgres@127.0.0.1:5432/ledger\"}" > config.json
         env:
           POSTGRES_HOST: postgres
           POSTGRES_PORT: 5432
@@ -49,5 +49,5 @@ jobs:
 
       - name: Integration tests
         env:
-          DATABASE_URL: postgres://runner:@localhost:5432/test_db?sslmode=disable
+          DATABASE_URL: postgres://runner:@127.0.0.1:5432/test_db?sslmode=disable
         run: go test ./...
