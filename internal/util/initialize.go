@@ -47,6 +47,18 @@ func AddTransaction(q *database.Queries, description, category string, date time
 	}
 }
 
+func AddBudget(q *database.Queries, category string, amount float64, period database.Period, startDate time.Time) {
+	_, err := q.CreateBudget(context.Background(), database.CreateBudgetParams{
+		TargetAmount: amount,
+		TimePeriod:   period,
+		StartDate:    startDate,
+		Name:         category,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 // TODO: Refactor
 func SeedDatabase(q *database.Queries) {
 	// --- Set Transactions ---
