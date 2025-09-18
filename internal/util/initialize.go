@@ -3,7 +3,7 @@ package util
 import (
 	"context"
 	"database/sql"
-	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -11,17 +11,19 @@ import (
 	"github.com/nfongster/ledger/internal/database"
 )
 
-func LoadConfig(filePath string) (*Config, error) {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return nil, err
+func GetDbConnectionString() string {
+	if os.Getenv("DATABASE_URL") != "" {
+		return os.Getenv("DATABASE_URL")
 	}
-	defer file.Close()
 
-	decoder := json.NewDecoder(file)
-	var config Config
-	decoder.Decode(&config)
-	return &config, err
+	host := os.Getenv("DB_HOST")
+	user := os.Getenv("POSTGRES_USER")
+	password := os.Getenv("POSTGRES_PASSWORD")
+	dbname := os.Getenv("POSTGRES_DB")
+	port := os.Getenv("POSTGRES_PORT")
+
+	return fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		host, user, password, dbname, port)
 }
 
 func ResetDatabase(q *database.Queries) {

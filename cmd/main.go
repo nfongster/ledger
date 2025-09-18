@@ -17,12 +17,9 @@ func main() {
 	fmt.Println("Welcome to ledger!")
 
 	// --- Initialize the database ---
-	cfg, err := util.LoadConfig("config.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	db, err := sql.Open("postgres", cfg.DbConnectionString)
+	connStr := util.GetDbConnectionString()
+	fmt.Printf("Opening database with connStr %s\n", connStr)
+	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}

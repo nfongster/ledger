@@ -1,0 +1,57 @@
+name: Continous Integration
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
+      GOOSE_DRIVER: postgres
+      GOOSE_MIGRATION_DIR: ./sql/schema
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: runner
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ledger
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+            - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.1"
+
+      - name: Version check
+        run: go version
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Install Goose
+        run: go install github.com/pressly/goose/v3/cmd/goose@latest
+
+      - name: Run database migrations
+        run: goose up
+        env:
+          GOOSE_DBSTRING: ${{ env.DATABASE_URL }}
+
+      - name: Integration tests
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+        run: go test ./...

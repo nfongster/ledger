@@ -9,6 +9,3 @@ An app that simplifies and automates your budgeting routine.
    chmod +x ledger.sh
    ```
 3. Execute the bash script to start the server.
-
-## TODO
-- Set up postgres and create config.json file at root
