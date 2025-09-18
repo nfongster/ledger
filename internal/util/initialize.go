@@ -12,6 +12,10 @@ import (
 )
 
 func GetDbConnectionString() string {
+	if os.Getenv("DATABASE_URL") != "" {
+		return os.Getenv("DATABASE_URL")
+	}
+
 	host := os.Getenv("DB_HOST")
 	user := os.Getenv("POSTGRES_USER")
 	password := os.Getenv("POSTGRES_PASSWORD")
