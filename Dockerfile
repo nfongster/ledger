@@ -17,9 +17,14 @@ COPY . .
 # Build the application
 RUN go build -o /app/bin/ledger ./cmd/main.go
 
+# Install goose
+RUN go install github.com/pressly/goose/v3/cmd/goose@latest
+
 FROM debian:stable-slim
 
 # Copies the build results into the image's /bin/ledger folder
 COPY --from=builder /app/bin/ledger /bin/ledger
+COPY --from=builder /go/bin/goose /bin/goose
+COPY sql/schema /sql/schema
 
 CMD ["/bin/ledger"]
