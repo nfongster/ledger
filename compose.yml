@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: runner
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ledger
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U runner -d ledger"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # migrate:
+  #   build: .
+  #   depends_on:
+  #     - db
+  #   command: ["goose", "up"]
+  #   restart: "no"
+  #   environment:
+  #     DB_HOST: db
+  #     DATABASE_URL: postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
+  #     POSTGRES_PORT: 5432
+  #     POSTGRES_USER: runner
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: ledger
+  #     GOOSE_DRIVER: postgres
+  #     GOOSE_DBSTRING: postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
+  #     GOOSE_MIGRATION_DIR: ./sql/schema
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+      # migrate:
+      #   condition: service_completed_successfully
+    restart: always
+    environment:
+      DB_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: runner
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ledger
+    ports:
+      - 8080:8080
+    command: ["/bin/ledger"]

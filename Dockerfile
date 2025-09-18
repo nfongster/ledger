@@ -1,7 +1,6 @@
 FROM debian:stable-slim
 
+# TODO: Automate this build
 COPY cmd/cmd /bin/ledger
-
-COPY config.json config.json
 
 CMD ["/bin/ledger"]
