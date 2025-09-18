@@ -8,6 +8,10 @@ jobs:
   tests:
     name: Tests
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
+      GOOSE_DRIVER: postgres
+      GOOSE_MIGRATION_DIR: ./sql/schema
 
     services:
       postgres:
@@ -45,11 +49,7 @@ jobs:
       - name: Run database migrations
         run: goose up
         env:
-          GOOSE_DRIVER: postgres
-          GOOSE_DBSTRING: postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
-          GOOSE_MIGRATION_DIR: ./sql/schema
+          GOOSE_DBSTRING: ${{ env.DATABASE_URL }}
 
       - name: Integration tests
-        env:
-          DATABASE_URL: postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
         run: go test ./...
