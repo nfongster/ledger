@@ -20,12 +20,8 @@ import (
 )
 
 func setupTestDB() *sql.DB {
-	cfg, err := util.LoadConfig("../../config.json")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	db, err := sql.Open("postgres", cfg.DbConnectionString)
+	connStr := util.GetDbConnectionString()
+	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatal(err)
 	}
