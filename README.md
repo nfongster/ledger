@@ -19,7 +19,7 @@ ledger allows you to manage both individual transactions and budgets, both of wh
 
 ![alt text](.github/images/home.png)
 
-Navigate to the Transactions page to view a list of all recorded transactions.  You can add a new transaction, edit an exiting transaction, or delete a transaction.
+Navigate to the Transactions page to view a list of all recorded transactions.  You can add a new transaction, edit an existing transaction, or delete a transaction.
 
 ![alt text](.github/images/transactions.png)
 
