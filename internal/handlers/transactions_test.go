@@ -35,7 +35,7 @@ func TestGetTransactionsHandler(t *testing.T) {
 	state := &util.State{Database: q}
 
 	util.ResetDatabase(q)
-	util.AddTransaction(q, "Coffee", "Groceries", time.Date(2025, time.October, 16, 0, 0, 0, 0, time.UTC), 9.99)
+	util.AddTransaction(q, "Coffee", "Groceries", "", time.Date(2025, time.October, 16, 0, 0, 0, 0, time.UTC), 9.99)
 
 	router := gin.Default()
 	router.GET("/api/transactions", GetTransactionsHandler(state))
@@ -126,7 +126,7 @@ func TestDeleteTransactionsHandler(t *testing.T) {
 	state := &util.State{Database: q}
 
 	util.ResetDatabase(q)
-	util.AddTransaction(q, "Coffee", "Groceries", time.Now(), 9.99)
+	util.AddTransaction(q, "Coffee", "Groceries", "", time.Now(), 9.99)
 
 	router := gin.Default()
 	router.DELETE("/api/transactions/:id", DeleteTransactionHandler(state))
@@ -166,7 +166,7 @@ func TestPutTransactionsHandler(t *testing.T) {
 
 	util.ResetDatabase(q)
 	// Add a transaction to be updated
-	util.AddTransaction(q, "Coffee", "Groceries", time.Now(), 9.99)
+	util.AddTransaction(q, "Coffee", "Groceries", "", time.Now(), 9.99)
 
 	// Define the updated data
 	updatedTransaction := util.TransactionClientParams{
