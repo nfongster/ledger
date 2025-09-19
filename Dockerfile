@@ -27,4 +27,7 @@ COPY --from=builder /app/bin/ledger /bin/ledger
 COPY --from=builder /go/bin/goose /bin/goose
 COPY sql/schema /sql/schema
 
+# Copy static web assets
+COPY web /web
+
 CMD ["/bin/ledger"]
