@@ -14,8 +14,7 @@ jobs:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: ledger
       POSTGRES_PORT: 5432
-      DATABASE_URL: |
-        postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
+      DATABASE_URL: postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
       GOOSE_DRIVER: postgres
       GOOSE_MIGRATION_DIR: ./sql/schema
 
