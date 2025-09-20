@@ -9,7 +9,13 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     env:
-      DATABASE_URL: postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
+      DB_HOST: localhost
+      POSTGRES_USER: runner
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ledger
+      POSTGRES_PORT: 5432
+      DATABASE_URL: |
+        postgres://runner:postgres@127.0.0.1:5432/ledger?sslmode=disable
       GOOSE_DRIVER: postgres
       GOOSE_MIGRATION_DIR: ./sql/schema
 
@@ -52,6 +58,4 @@ jobs:
           GOOSE_DBSTRING: ${{ env.DATABASE_URL }}
 
       - name: Integration tests
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
-        run: go test ./...
+        run: ./ledger.sh test
