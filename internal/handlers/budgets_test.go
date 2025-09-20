@@ -28,6 +28,7 @@ func TestGetBudgetsStatusHandler(t *testing.T) {
 	util.AddTransaction(q,
 		"Coffee",
 		"Food",
+		"",
 		time.Date(2025, time.October, 16, 0, 0, 0, 0, time.UTC),
 		9.99)
 	util.AddBudget(q,
@@ -72,6 +73,7 @@ func TestPostBudgetsHandler(t *testing.T) {
 	util.AddTransaction(q,
 		"Plane ticket",
 		"Travel",
+		"",
 		time.Date(2025, time.November, 1, 0, 0, 0, 0, time.UTC),
 		450.00)
 
@@ -125,6 +127,7 @@ func TestDeleteBudgetsHandler(t *testing.T) {
 	util.AddTransaction(q,
 		"Plane ticket",
 		"Travel",
+		"",
 		time.Date(2025, time.November, 1, 0, 0, 0, 0, time.UTC),
 		450.00)
 	util.AddBudget(q,
@@ -171,6 +174,7 @@ func TestPutBudgetsHandler(t *testing.T) {
 	util.AddTransaction(q,
 		"Plane ticket",
 		"Travel",
+		"",
 		time.Date(2025, time.November, 1, 0, 0, 0, 0, time.UTC),
 		450.00)
 	util.AddBudget(q,
